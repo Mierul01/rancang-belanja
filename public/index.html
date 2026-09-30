@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F2F4F8">
+<meta name="description" content="Rancang perbelanjaan bulanan: bil wajib dan boleh tangguh.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Paycheck">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Paycheck Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app shell. Phone = bottom tab bar + floating add button; desktop = left sidebar menu. Home is one ink summary card, three plain figures, one status card, one "to pay" list. */
+:root {
+  --bg: #F2F4F8;
+  --surface: #FFFFFF;
+  --surface-2: #F5F7FA;
+  --line: #E1E5EC;
+  --fg: #121A2C;
+  --muted: #5C6679;
+  --ink: #16203D;
+  --ink-2: #26325B;
+  --ink-3: #2F3F73;
+  --ink-fg: #F1F3F9;
+  --ink-muted: #AEB7CF;
+  --accent: #F2B544;
+  --accent-fg: #1B1405;
+  --must: #D64545;
+  --defer: #3A80C2;
+  --ok: #1F9A66;
+  --warn: #C98304;
+  --shadow: 0 1px 2px rgba(20,27,45,.06), 0 10px 28px -14px rgba(20,27,45,.22);
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0E18; --surface: #121827; --surface-2: #1A2135; --line: #252E47;
+    --fg: #E8EBF3; --muted: #9AA3B8; --ink: #1C2850; --ink-2: #2B3969; --ink-3: #1A2B66;
+    --ink-fg: #F1F3F9; --ink-muted: #AEB7CF; --accent: #F5BE55; --accent-fg: #1B1405;
+    --must: #EE6868; --defer: #5EA3E2; --ok: #38C184; --warn: #EDA82B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0E18; --surface: #121827; --surface-2: #1A2135; --line: #252E47;
+  --fg: #E8EBF3; --muted: #9AA3B8; --ink: #1C2850; --ink-2: #2B3969; --ink-3: #1A2B66;
+  --ink-fg: #F1F3F9; --ink-muted: #AEB7CF; --accent: #F5BE55; --accent-fg: #1B1405;
+  --must: #EE6868; --defer: #5EA3E2; --ok: #38C184; --warn: #EDA82B;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* ---------- shell ---------- */
+.side { display: none; }
+.content { width: 100%; max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 10px 150px; display: grid; gap: 16px; align-content: start; }
+@media (min-width: 900px) {
+  .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+  .side { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; height: 100dvh; padding: 22px 14px; background: var(--surface); border-right: 1px solid var(--line); }
+  .content { padding-inline: 32px; padding-block: 26px 48px; }
+  .bottom-nav, .fab { display: none !important; }
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--ink); display: grid; place-items: center; flex: none; }
+.brand-name { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -.01em; line-height: 1.1; }
+.side-link { border: 0; background: transparent; display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; font-weight: 600; color: var(--muted); text-align: left; }
+.side-link:hover { background: var(--surface-2); color: var(--fg); }
+.side-link[aria-current="page"] { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--fg); box-shadow: inset 3px 0 0 var(--accent); }
+.side-add { margin-top: 14px; justify-content: center; }
+.side-foot { margin-top: auto; display: grid; gap: 10px; padding: 0 6px; }
+
+.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.bottom-nav button { border: 0; background: transparent; display: grid; justify-items: center; gap: 3px; padding: 4px 0; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.bottom-nav .ic { width: 48px; height: 28px; border-radius: 999px; display: grid; place-items: center; transition: background .15s; }
+.bottom-nav button[aria-current="page"] { color: var(--fg); }
+.bottom-nav button[aria-current="page"] .ic { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+.fab { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 31; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; border-radius: 999px; padding: 13px 18px; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 10px 28px -8px rgba(0,0,0,.45); }
+
+/* ---------- page header ---------- */
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; }
+.page-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -.015em; }
+.page-sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.head-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.month-nav { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.month-nav button { border: 0; background: transparent; width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; color: var(--muted); }
+.month-nav button:hover { background: var(--surface-2); color: var(--fg); }
+.month-label { min-width: 128px; text-align: center; font-weight: 700; font-size: 14px; }
+.lang { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.lang button { border: 0; background: transparent; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
+.lang.icons button { padding: 6px 9px; display: grid; place-items: center; }
+.theme-cycle { border: 1px solid var(--line); background: var(--surface); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--fg); }
+.mobile-tools { display: flex; gap: 8px; align-items: center; }
+.side-foot .lang { justify-content: space-between; }
+.side-foot .lang button { flex: 1; }
+.mobile-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mobile-brand .brand { padding: 0; }
+@media (min-width: 900px) { .mobile-brand { display: none; } }
+
+/* ---------- common ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: 0 1px 2px rgba(20,27,45,.04); display: grid; gap: 12px; min-width: 0; }
+.card-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; text-wrap: pretty; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--defer); font-weight: 600; font-size: 13.5px; font-family: var(--font-body); }
+.btn-primary { border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; border-radius: 999px; padding: 10px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-ghost { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 13.5px; }
+.btn-ghost:hover { border-color: var(--muted); }
+.btn-danger { border: 1px solid color-mix(in srgb, var(--must) 45%, var(--line)); background: transparent; color: var(--must); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 13.5px; }
+.btn-danger.solid { background: var(--must); color: #fff; border-color: var(--must); }
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; padding: 14px 16px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.banner-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--fg); flex: none; }
+.banner-body { display: flex; gap: 12px; align-items: center; flex: 1 1 300px; min-width: 0; }
+.banner p { margin: 0; font-size: 14px; color: var(--muted); flex: 1 1 260px; }
+.banner strong { color: var(--fg); }
+.banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- home ---------- */
+.hero { background: radial-gradient(520px 220px at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%), linear-gradient(135deg, var(--ink) 0%, var(--ink-3) 100%); color: var(--ink-fg); border-radius: 24px; padding: 24px; display: grid; gap: 14px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+.hero::after { content: ""; position: absolute; right: 22px; top: 22px; width: 64px; height: 64px; border-radius: 18px; background-color: color-mix(in srgb, var(--ink-fg) 8%, transparent); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='3' y='5' width='18' height='14' rx='3' stroke='%23F2B544' stroke-width='1.6'/%3E%3Cpath d='M3 10h18' stroke='%23F2B544' stroke-width='1.6'/%3E%3Ccircle cx='16.5' cy='14.5' r='1.4' fill='%23F2B544'/%3E%3C/svg%3E"); background-size: 34px; background-repeat: no-repeat; background-position: center; pointer-events: none; }
+@media (max-width: 420px) { .hero::after { width: 48px; height: 48px; background-size: 26px; right: 16px; top: 16px; } }
+.hero > * { position: relative; z-index: 1; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-muted); font-weight: 700; }
+.big { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 11vw, 60px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.big.neg { color: #FF9C9C; }
+.hero-note { margin: 0; color: var(--ink-muted); font-size: 14.5px; max-width: 46ch; }
+.hero-note b { color: var(--ink-fg); }
+.meter { height: 10px; border-radius: 999px; background: color-mix(in srgb, var(--ink-fg) 14%, transparent); overflow: hidden; display: flex; }
+.meter span { height: 100%; transition: width .4s ease; }
+.meter-label { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--ink-muted); }
+
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; transition: border-color .15s, transform .15s; min-width: 0; text-align: left; display: grid; gap: 4px; }
+button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
+.figure-label { font-size: 12.5px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.figure-value { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.figure-hint { font-size: 11.5px; color: var(--muted); }
+@media (max-width: 420px) { .figure { padding: 10px; } .figure-value { font-size: 14.5px; } .figure-label { font-size: 11.5px; } }
+
+.status { border-left: 0; }
+.status-head { display: flex; align-items: center; gap: 10px; }
+.status-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #fff; font-weight: 800; }
+.status h3 { margin: 0; font-size: 16.5px; font-weight: 700; }
+.status.good { background: color-mix(in srgb, var(--ok) 8%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); }
+.status.warn { background: color-mix(in srgb, var(--warn) 9%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
+.status.bad { background: color-mix(in srgb, var(--must) 8%, var(--surface)); border-color: color-mix(in srgb, var(--must) 45%, var(--line)); }
+.status.none { background: var(--surface); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; }
+
+.home-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .home-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; } }
+
+/* ---------- lists ---------- */
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; }
+.row:hover { background: var(--surface-2); }
+.check { width: 30px; height: 30px; position: relative; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; padding: 0; flex: none; transition: background .15s, border-color .15s; }
+.check::before { content: ""; position: absolute; inset: -8px; }
+.check:hover:not(:disabled) { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, var(--surface)); }
+.check:active { transform: scale(.92); }
+.check[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); }
+.row-main { border: 0; background: transparent; text-align: left; padding: 0; min-width: 0; display: grid; gap: 1px; }
+.row-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-meta { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row.is-paid .row-name { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.row-end { display: grid; justify-items: end; gap: 4px; }
+.amt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row.is-paid .amt { color: var(--muted); font-weight: 600; }
+.row-tags { display: flex; gap: 6px; align-items: center; }
+.pill { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill-paid { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+.pill-late { background: color-mix(in srgb, var(--must) 15%, transparent); color: var(--must); }
+.pill-soon { background: color-mix(in srgb, var(--warn) 17%, transparent); color: var(--warn); }
+.pill-upcoming, .pill-none { background: var(--surface-2); color: var(--muted); }
+.defer-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; color: var(--defer); white-space: nowrap; }
+.defer-btn:hover { border-color: var(--defer); }
+.empty { padding: 22px 12px; text-align: center; color: var(--muted); font-size: 14px; }
+
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px; gap: 4px; }
+.tabs button { border: 0; background: transparent; border-radius: 10px; padding: 10px 8px; font-weight: 700; font-size: 14px; color: var(--muted); display: grid; gap: 2px; justify-items: center; }
+.tabs button span.t { display: flex; align-items: center; gap: 7px; }
+.tabs button small { font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tabs button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line); }
+.search { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 11px 14px; font-size: 15px; }
+.list-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.progress span { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+.add-inline { width: 100%; border: 1px dashed var(--line); background: transparent; border-radius: 12px; padding: 10px; color: var(--muted); font-weight: 600; font-size: 14px; }
+.add-inline:hover { color: var(--fg); border-color: var(--muted); }
+
+/* ---------- reports ---------- */
+.report-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .report-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.trend { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; align-items: end; height: 190px; padding-top: 18px; border-bottom: 1px solid var(--line); background-image: linear-gradient(var(--line) 1px, transparent 1px); background-size: 100% 25%; background-position: 0 18px; }
+.tcol { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; height: 100%; gap: 0; position: relative; }
+.tcol .tval { font-size: 11px; font-weight: 700; text-align: center; color: var(--muted); margin-bottom: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tcol .stack { display: flex; flex-direction: column-reverse; border-radius: 6px 6px 0 0; overflow: hidden; }
+.tcol.cur .tval { color: var(--fg); }
+.tlabels { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--muted); text-align: center; }
+.tlabels .cur { color: var(--fg); font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.cat-row { display: grid; gap: 5px; }
+.cat-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.cat-top span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-bar { height: 8px; background: var(--surface-2); border-radius: 999px; display: flex; overflow: hidden; }
+.cat-bar span { height: 100%; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- settings ---------- */
+.set-list { display: grid; gap: 14px; }
+.set-row { display: flex; justify-content: space-between; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+.set-row > div:first-child { flex: 1 1 220px; min-width: 0; }
+.set-row h3 { margin: 0; font-size: 15.5px; font-weight: 700; }
+.set-row p { margin: 2px 0 0; }
+.select, .input { border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 16px; }
+.inline-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.inline-form .input { width: 160px; }
+.lang-big { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 240px; }
+.lang-big button { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-weight: 700; text-align: left; display: grid; }
+.lang-big button small { font-weight: 500; color: var(--muted); font-size: 12px; }
+.lang-big.three { grid-template-columns: repeat(3, 1fr); }
+.lang-big button span.bi { display: flex; align-items: center; gap: 8px; }
+.lang-big button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+@media (max-width: 420px) { .lang-big { min-width: 0; width: 100%; } }
+.divider { height: 1px; background: var(--line); }
+
+/* ---------- sheet ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(8,12,24,.5); z-index: 50; display: flex; align-items: flex-end; justify-content: center; animation: fade .15s ease; }
+@media (min-width: 640px) { .scrim { align-items: center; padding: 24px; } }
+.sheet { background: var(--surface); width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 15px; animation: rise .2s ease; }
+@media (min-width: 640px) { .sheet { border-radius: 22px; } }
+.sheet h2 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.icon-btn { border: 0; background: var(--surface-2); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); }
+.field { display: grid; gap: 6px; }
+.field label, .field .label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.field .input { width: 100%; }
+.input:focus, .select:focus, .search:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.prio { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.prio label { border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; cursor: pointer; background: var(--surface-2); position: relative; }
+.prio input { position: absolute; opacity: 0; pointer-events: none; }
+.prio b { display: flex; align-items: center; gap: 6px; color: var(--fg); font-size: 14.5px; }
+.prio small { color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1.35; }
+.prio label.on-must { border-color: var(--must); background: color-mix(in srgb, var(--must) 8%, var(--surface)); }
+.prio label.on-defer { border-color: var(--defer); background: color-mix(in srgb, var(--defer) 8%, var(--surface)); }
+.prio label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check-line { display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 500; }
+.check-line input { width: 18px; height: 18px; accent-color: var(--ok); }
+.form-err { color: var(--must); font-size: 13.5px; font-weight: 600; margin: 0; }
+.sheet-actions { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; align-items: center; }
+.sheet-actions .right { display: flex; gap: 8px; margin-left: auto; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(142px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--ink-fg); padding: 10px 16px; border-radius: 12px; font-size: 14px; box-shadow: var(--shadow); max-width: calc(100% - 32px); animation: fade .2s ease; }
+@media (min-width: 900px) { .toast { bottom: 24px; } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(16px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 420px) { .month-label { min-width: 108px; font-size: 13px; } .hero { padding: 18px; } .page-title { font-size: 23px; } }
+</style>
+
+<div id="root">
+  <div class="content"><div class="hero"><div class="eyebrow">Paycheck Planner</div><p class="hero-note">Memuatkan perbelanjaan anda…</p></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function () {
+  const { useState, useEffect, useMemo, useRef } = React;
+  const html = htm.bind(React.createElement);
+
+  // ---------- language ----------
+  const DICT = {
+    ms: {
+      nav_home: 'Utama', nav_exp: 'Perbelanjaan', nav_rep: 'Laporan', nav_set: 'Tetapan',
+      n_items: '{n} item', add: 'Tambah', add_expense: 'Tambah perbelanjaan', loading: 'Memuatkan perbelanjaan anda…',
+      prev_month: 'Bulan sebelum', next_month: 'Bulan seterusnya', this_month: 'Bulan ini',
+      home_sub: 'Ringkasan kewangan {m}',
+      left_after: 'Baki selepas bil wajib',
+      hero_noincome: 'Masukkan <b>pendapatan bulanan</b> anda untuk melihat baki.',
+      hero_bad: 'Bil wajib melebihi pendapatan sebanyak <b>{a}</b>.',
+      hero_warn: 'Bil wajib selamat. Tangguhkan <b>{a}</b> untuk kekal dalam bajet.',
+      hero_good: 'Semua perbelanjaan muat dalam bajet. Lebihan <b>{a}</b>.',
+      paid_of: '{a} daripada {b} sudah dibayar',
+      income: 'Pendapatan', must: 'Wajib bayar', defer: 'Boleh tangguh', tap_edit: 'Ketik untuk ubah', set_income: 'Tetapkan',
+      st_none_t: 'Tetapkan pendapatan anda', st_none_p: 'Kami perlukan pendapatan bulan ini untuk menilai bajet anda.',
+      st_good_t: 'Bajet anda seimbang', st_good_p: 'Semua perbelanjaan boleh dibayar. Pertimbangkan untuk simpan lebihan {a}.',
+      st_warn_t: 'Tangguhkan beberapa perbelanjaan', st_warn_p: 'Anda terlebih {a}. Pindahkan item ini ke {m}:',
+      st_bad_t: 'Pendapatan tidak cukup untuk bil wajib', st_bad_p: 'Anda terlebih {a}. Tangguhkan semua yang boleh, kemudian semak bil wajib yang terbesar.',
+      st_short: 'Masih kurang {a} selepas ditangguhkan.',
+      move_n: 'Pindahkan ke {m}', go_settings: 'Buka Tetapan',
+      to_pay: 'Perlu dibayar', see_all: 'Lihat semua', all_paid: 'Semua bil wajib bulan ini sudah dibayar.',
+      no_must: 'Tiada bil wajib lagi. Tambah sewa, pinjaman atau utiliti.',
+      exp_sub: 'Senarai perbelanjaan {m}', search: 'Cari perbelanjaan…',
+      must_desc: 'Bil yang ada denda atau kesan jika lewat', defer_desc: 'Perbelanjaan yang boleh tunggu sebulan',
+      list_paid: '{a} sudah dibayar', list_left: '{a} belum dibayar',
+      empty_must: 'Tiada bil wajib untuk bulan ini.', empty_defer: 'Tiada perbelanjaan boleh tangguh untuk bulan ini.', empty_search: 'Tiada padanan untuk carian ini.',
+      add_must: '+ Tambah bil wajib', add_defer: '+ Tambah perbelanjaan boleh tangguh',
+      move_to: 'Ke {m}', every_month: 'Setiap bulan', one_off: 'Sekali sahaja',
+      paid: 'Dibayar', anytime: 'Bila-bila', overdue: 'Lewat', overdue_d: 'Lewat {d} hari', due_today: 'Hari ini', due_in: '{d} hari lagi', due_on: '{d} {m}',
+      mark_paid: 'Tandakan dibayar: ', mark_unpaid: 'Tandakan belum dibayar: ', edit: 'Ubah ',
+      rep_sub: 'Analisis perbelanjaan {m}', trend: 'Trend 6 bulan', by_cat: 'Mengikut kategori', month_sum: 'Ringkasan bulan',
+      total_spend: 'Jumlah perbelanjaan', paid_total: 'Sudah dibayar', unpaid_total: 'Belum dibayar', balance: 'Baki akhir', no_data: 'Tiada data untuk bulan ini.',
+      set_sub: 'Bahasa, mata wang dan data anda', lang_t: 'Bahasa', lang_p: 'Pilih bahasa paparan aplikasi.',
+      cur_t: 'Mata wang', cur_p: 'Simbol yang dipaparkan pada semua jumlah.',
+      inc_t: 'Pendapatan {m}', inc_p: 'Bulan seterusnya menggunakan jumlah yang sama sehingga anda mengubahnya.', save: 'Simpan',
+      carry_t: 'Item berulang', carry_p: '{n} item berulang dari {m} belum ada dalam bulan ini.', carry_none: 'Semua item berulang sudah ada dalam bulan ini.', carry_btn: 'Salin ke bulan ini',
+      clear_t: 'Padam perbelanjaan bulan ini', clear_p: 'Memadam {n} item dalam {m}. Tindakan ini tidak boleh dibatalkan.', clear_btn: 'Padam', clear_yes: 'Ya, padam semua', cancel: 'Batal',
+      store_db: 'Disimpan secara peribadi dalam akaun anda. Hanya anda boleh melihatnya.', store_local: 'Disimpan dalam pelayar ini sahaja.', connecting: 'Menyambung…',
+      ex_banner: '<strong>Mod contoh.</strong> Cuba semua fungsi: tandakan dibayar, tangguh atau ubah item. Perubahan belum disimpan.',
+      ex_save: 'Simpan sebagai data saya', ex_clear: 'Mula senarai kosong',
+      t_demo_saved: 'Contoh disimpan sebagai data anda.', t_demo_cleared: 'Senarai kosong sedia. Tambah perbelanjaan pertama anda.',
+      theme_t: 'Tema paparan', theme_p: 'Cerah, gelap, atau ikut tetapan peranti.', th_system: 'Sistem', th_light: 'Cerah', th_dark: 'Gelap',
+      carry_banner: '<strong>{n} item berulang</strong> dari {m} belum ditambah ({a}).', carry_add: 'Tambah sekarang',
+      sheet_new: 'Tambah perbelanjaan', sheet_edit: 'Ubah perbelanjaan', type: 'Jenis',
+      must_ex: 'Sewa, pinjaman, utiliti, takaful', defer_ex: 'Kehendak yang boleh tunggu',
+      f_name: 'Nama', f_name_ph: 'cth. Bil elektrik', f_amount: 'Jumlah ({s})', f_due: 'Tarikh akhir (hari)', f_due_ph: 'Pilihan',
+      f_cat: 'Kategori', f_note: 'Catatan', f_note_ph: 'Pilihan, cth. nombor akaun', f_rec: 'Berulang setiap bulan',
+      e_name: 'Sila masukkan nama perbelanjaan.', e_amount: 'Masukkan jumlah lebih daripada sifar.', e_due: 'Tarikh akhir mestilah 1 hingga 31, atau biarkan kosong.',
+      delete: 'Padam', delete_yes: 'Ya, padam', save_changes: 'Simpan', add_to: 'Tambah ke {m}', close: 'Tutup',
+      t_saved: 'Disimpan.', t_added: '{n} ditambah.', t_deleted: '{n} dipadam.', t_moved: '{n} dipindahkan ke {m}.', t_moved_n: '{n} item dipindahkan ke {m}.',
+      t_income: 'Pendapatan {m} disimpan.', t_carry: '{n} item berulang ditambah.', t_ex: 'Contoh disalin. Ubah atau padam yang tidak berkaitan.', t_cleared: 'Perbelanjaan {m} dipadam.',
+      err_perm: 'Perubahan tidak dapat disimpan. Anda mungkin hanya ada akses lihat.', err_quota: 'Storan penuh. Padam beberapa perbelanjaan lama dan cuba lagi.',
+      err_gone: 'Penyimpanan tidak lagi tersedia. Muat semula halaman.', err_net: 'Tidak dapat menyimpan. Semak sambungan internet dan cuba lagi.'
+    },
+    en: {
+      nav_home: 'Home', nav_exp: 'Expenses', nav_rep: 'Reports', nav_set: 'Settings',
+      n_items: '{n} items', add: 'Add', add_expense: 'Add expense', loading: 'Loading your expenses…',
+      prev_month: 'Previous month', next_month: 'Next month', this_month: 'This month',
+      home_sub: 'Your money in {m}',
+      left_after: 'Left after must-pay bills',
+      hero_noincome: 'Enter your <b>monthly income</b> to see what is left.',
+      hero_bad: 'Must-pay bills are <b>{a}</b> more than your income.',
+      hero_warn: 'Essentials are covered. Defer <b>{a}</b> to stay on budget.',
+      hero_good: 'Everything fits your budget, with <b>{a}</b> to spare.',
+      paid_of: '{a} of {b} paid',
+      income: 'Income', must: 'Must pay', defer: 'Can defer', tap_edit: 'Tap to change', set_income: 'Set income',
+      st_none_t: 'Set your income', st_none_p: 'Add this month’s income so the planner can check your budget.',
+      st_good_t: 'Your budget balances', st_good_p: 'Everything can be paid. Consider saving the {a} left over.',
+      st_warn_t: 'Defer a few things', st_warn_p: 'You are {a} over. Move these to {m}:',
+      st_bad_t: 'Income does not cover must-pay bills', st_bad_p: 'You are {a} over. Defer everything you can, then review your largest bill.',
+      st_short: 'Still {a} short after deferring.',
+      move_n: 'Move to {m}', go_settings: 'Open Settings',
+      to_pay: 'Still to pay', see_all: 'See all', all_paid: 'All must-pay bills for this month are paid.',
+      no_must: 'No must-pay bills yet. Add rent, loans or utilities.',
+      exp_sub: 'Expenses for {m}', search: 'Search expenses…',
+      must_desc: 'Bills with a penalty or real harm if late', defer_desc: 'Spending that can wait a month',
+      list_paid: '{a} paid', list_left: '{a} to go',
+      empty_must: 'No must-pay bills this month.', empty_defer: 'Nothing to defer this month.', empty_search: 'Nothing matches this search.',
+      add_must: '+ Add a must-pay bill', add_defer: '+ Add something that can wait',
+      move_to: 'To {m}', every_month: 'Every month', one_off: 'One-off',
+      paid: 'Paid', anytime: 'Anytime', overdue: 'Overdue', overdue_d: 'Overdue {d}d', due_today: 'Due today', due_in: 'In {d} days', due_on: '{d} {m}',
+      mark_paid: 'Mark as paid: ', mark_unpaid: 'Mark as unpaid: ', edit: 'Edit ',
+      rep_sub: 'Spending analysis for {m}', trend: '6-month trend', by_cat: 'By category', month_sum: 'Month summary',
+      total_spend: 'Total spending', paid_total: 'Paid', unpaid_total: 'Unpaid', balance: 'Final balance', no_data: 'No data for this month.',
+      set_sub: 'Language, currency and your data', lang_t: 'Language', lang_p: 'Choose the app’s display language.',
+      cur_t: 'Currency', cur_p: 'The symbol shown on every amount.',
+      inc_t: 'Income for {m}', inc_p: 'Later months use the same amount until you change it.', save: 'Save',
+      carry_t: 'Recurring items', carry_p: '{n} recurring items from {m} are not in this month yet.', carry_none: 'All recurring items are already in this month.', carry_btn: 'Copy to this month',
+      clear_t: 'Delete this month’s expenses', clear_p: 'Deletes {n} items in {m}. This cannot be undone.', clear_btn: 'Delete', clear_yes: 'Yes, delete all', cancel: 'Cancel',
+      store_db: 'Saved privately to your account. Only you can see it.', store_local: 'Saved in this browser only.', connecting: 'Connecting…',
+      ex_banner: '<strong>Example mode.</strong> Try everything: tick items as paid, defer or edit them. Changes are not saved yet.',
+      ex_save: 'Keep as my data', ex_clear: 'Start with an empty list',
+      t_demo_saved: 'Examples saved as your data.', t_demo_cleared: 'Empty list ready. Add your first expense.',
+      theme_t: 'Appearance', theme_p: 'Light, dark, or follow your device.', th_system: 'System', th_light: 'Light', th_dark: 'Dark',
+      carry_banner: '<strong>{n} recurring items</strong> from {m} are not added yet ({a}).', carry_add: 'Add them now',
+      sheet_new: 'Add expense', sheet_edit: 'Edit expense', type: 'Type',
+      must_ex: 'Rent, loans, utilities, insurance', defer_ex: 'Wants that can wait',
+      f_name: 'Name', f_name_ph: 'e.g. Electricity bill', f_amount: 'Amount ({s})', f_due: 'Due day of month', f_due_ph: 'Optional',
+      f_cat: 'Category', f_note: 'Note', f_note_ph: 'Optional, e.g. account number', f_rec: 'Repeats every month',
+      e_name: 'Give this expense a name.', e_amount: 'Enter an amount greater than zero.', e_due: 'Due day must be from 1 to 31, or left blank.',
+      delete: 'Delete', delete_yes: 'Yes, delete', save_changes: 'Save changes', add_to: 'Add to {m}', close: 'Close',
+      t_saved: 'Saved.', t_added: '{n} added.', t_deleted: '{n} deleted.', t_moved: '{n} moved to {m}.', t_moved_n: '{n} items moved to {m}.',
+      t_income: 'Income for {m} saved.', t_carry: '{n} recurring items added.', t_ex: 'Examples copied. Edit or delete anything that does not apply.', t_cleared: 'Expenses for {m} deleted.',
+      err_perm: 'This change could not be saved. You may only have view access.', err_quota: 'Storage is full. Delete some old expenses and try again.',
+      err_gone: 'Saving is no longer available. Reload the page.', err_net: 'Could not save. Check your connection and try again.'
+    }
+  };
+  const MONTHS = {
+    ms: ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  };
+  const MONTHS_S = {
+    ms: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'],
+    en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  };
+  // Category keys are stored in English; labels are translated for display.
+  const CATEGORIES = ['Housing', 'Utilities', 'Loans & debt', 'Insurance', 'Food & groceries', 'Transport', 'Education', 'Health', 'Family', 'Subscriptions', 'Shopping', 'Leisure', 'Savings', 'Other'];
+  const CAT_MS = { 'Housing': 'Kediaman', 'Utilities': 'Utiliti', 'Loans & debt': 'Pinjaman & hutang', 'Insurance': 'Insurans & takaful', 'Food & groceries': 'Makanan & dapur', 'Transport': 'Pengangkutan', 'Education': 'Pendidikan', 'Health': 'Kesihatan', 'Family': 'Keluarga', 'Subscriptions': 'Langganan', 'Shopping': 'Membeli-belah', 'Leisure': 'Hiburan & riadah', 'Savings': 'Simpanan', 'Other': 'Lain-lain' };
+  const CURRENCIES = [['RM', 'RM · Ringgit'], ['S$', 'S$ · Dolar SG'], ['$', '$ · Dolar AS'], ['€', '€ · Euro'], ['£', '£ · Paun'], ['Rp', 'Rp · Rupiah'], ['A$', 'A$ · Dolar AU']];
+  const LOCAL_KEY = 'paycheck-planner-v1';
+  const LANG_KEY = 'paycheck-planner-lang';
+  const THEME_KEY = 'paycheck-planner-theme';
+  const HOST_THEME = document.documentElement.getAttribute('data-theme');
+  const nm = (i, lang) => i.i18n ? i.i18n[lang] : i.name;
+  const EXAMPLE_INCOME = 5200;
+
+  function makeT(lang) {
+    const d = DICT[lang] || DICT.ms;
+    return (k, v) => String(d[k] != null ? d[k] : (DICT.en[k] != null ? DICT.en[k] : k)).replace(/\{(\w+)\}/g, (_, x) => v && v[x] != null ? v[x] : '');
+  }
+  // Only our own dictionary strings (with <b>/<strong>) go through this; user values are escaped first.
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const Rich = ({ text, tag, cls }) => React.createElement(tag || 'span', { className: cls, dangerouslySetInnerHTML: { __html: text } });
+
+  // ---------- helpers ----------
+  const pad = n => String(n).padStart(2, '0');
+  const monthKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1);
+  const parseM = m => m.split('-').map(Number);
+  const shiftMonth = (m, delta) => { const [y, mo] = parseM(m); return monthKey(new Date(y, mo - 1 + delta, 1)); };
+  const daysIn = m => { const [y, mo] = parseM(m); return new Date(y, mo, 0).getDate(); };
+  const mLong = (m, lang, withYear) => { const [y, mo] = parseM(m); return MONTHS[lang][mo - 1] + (withYear ? ' ' + y : ''); };
+  const mShort = (m, lang) => MONTHS_S[lang][parseM(m)[1] - 1];
+  const sum = arr => arr.reduce((a, i) => a + (Number(i.amount) || 0), 0);
+  function money(sym, n, whole) {
+    const v = Math.abs(n);
+    const cents = whole ? (Math.round(v * 100) % 100 !== 0) : true;
+    const s = v.toLocaleString('en-MY', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
+    return (n < 0 ? '−' : '') + sym + (/[A-Za-z]$/.test(sym) ? ' ' : '') + s;
+  }
+  const compact = (sym, n) => n >= 10000 ? sym + (n / 1000).toFixed(n >= 100000 ? 0 : 1) + 'k' : money(sym, n, true);
+  const catLabel = (c, lang) => lang === 'ms' ? (CAT_MS[c] || c) : c;
+
+  function incomeFor(profile, month) {
+    const inc = (profile && profile.incomes) || {};
+    if (inc[month] != null) return Number(inc[month]) || 0;
+    const earlier = Object.keys(inc).filter(k => k < month).sort();
+    return earlier.length ? Number(inc[earlier[earlier.length - 1]]) || 0 : 0;
+  }
+  function dueState(item, month, today, t, lang) {
+    if (item.paid) return { k: 'paid', label: t('paid') };
+    if (!item.dueDay) return { k: 'none', label: t('anytime') };
+    const d = Math.min(item.dueDay, daysIn(month));
+    const tm = monthKey(today);
+    if (month < tm) return { k: 'late', label: t('overdue') };
+    if (month > tm) return { k: 'upcoming', label: t('due_on', { d, m: mShort(month, lang) }) };
+    const diff = d - today.getDate();
+    if (diff < 0) return { k: 'late', label: t('overdue_d', { d: -diff }) };
+    if (diff === 0) return { k: 'soon', label: t('due_today') };
+    if (diff <= 3) return { k: 'soon', label: t('due_in', { d: diff }) };
+    return { k: 'upcoming', label: t('due_on', { d, m: mShort(month, lang) }) };
+  }
+  const RANK = { late: 0, soon: 1, upcoming: 2, none: 3, paid: 4 };
+  function sortItems(list, month, today) {
+    const k = i => RANK[dueState(i, month, today, x => x, 'en').k];
+    return list.slice().sort((a, b) => (k(a) - k(b)) || ((a.dueDay || 99) - (b.dueDay || 99)) || ((b.amount || 0) - (a.amount || 0)));
+  }
+  // Fewest deferrable items that close the gap: one item if a single one covers it, else largest first.
+  function planDefer(items, gap) {
+    const pool = items.slice().sort((a, b) => a.amount - b.amount);
+    const chosen = []; let rem = gap;
+    while (rem > 0.004 && pool.length) {
+      const idx = pool.findIndex(i => i.amount >= rem);
+      if (idx >= 0) { chosen.push(pool[idx]); rem -= pool[idx].amount; break; }
+      const big = pool.pop(); chosen.push(big); rem -= big.amount;
+    }
+    return { chosen, short: Math.max(0, rem) };
+  }
+  function exampleItems(month) {
+    const e = (en, bm, amount, priority, category, dueDay, extra) => Object.assign({ id: 'ex-' + en.replace(/\W+/g, '-'), name: en, i18n: { en: en, ms: bm }, amount, priority, category, dueDay, month, recurring: true, paid: false, note: '' }, extra || {});
+    return [
+      e('House rent', 'Sewa rumah', 1200, 'must', 'Housing', 1, { paid: true }),
+      e('Car loan instalment', 'Ansuran kereta', 850, 'must', 'Loans & debt', 7),
+      e('Electricity bill', 'Bil elektrik', 180, 'must', 'Utilities', 15, { paid: true }),
+      e('Water bill', 'Bil air', 35, 'must', 'Utilities', 20),
+      e('Home internet', 'Internet rumah', 139, 'must', 'Utilities', 22),
+      e('Study loan repayment', 'Bayaran balik pinjaman pendidikan', 200, 'must', 'Education', 28),
+      e('Medical & life takaful', 'Takaful perubatan & hayat', 150, 'must', 'Insurance', 10, { paid: true }),
+      e('Groceries', 'Barangan dapur', 800, 'must', 'Food & groceries', null),
+      e('Petrol & tolls', 'Minyak & tol', 250, 'must', 'Transport', null),
+      e('Video streaming', 'Langganan video strim', 55, 'defer', 'Subscriptions', 12, { paid: true }),
+      e('Gym membership', 'Keahlian gim', 120, 'defer', 'Health', 5),
+      e('Running shoes', 'Kasut larian', 250, 'defer', 'Shopping', null, { recurring: false }),
+      e('Dining out', 'Makan di luar', 300, 'defer', 'Leisure', null),
+      e('Weekend trip to Melaka', 'Percutian hujung minggu ke Melaka', 900, 'defer', 'Leisure', 26, { recurring: false })
+    ];
+  }
+  function errKey(e) {
+    const c = e && e.code;
+    if (c === 'invalid_argument') return 'err_perm';
+    if (c === 'quota_exceeded') return 'err_quota';
+    if (c === 'revoked' || c === 'not_granted') return 'err_gone';
+    return 'err_net';
+  }
+
+  // ---------- icons ----------
+  const svg = (d, size, sw) => html`<svg width=${size || 20} height=${size || 20} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=${sw || 2} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const Icon = {
+    home: svg(html`<path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>`),
+    list: svg(html`<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>`),
+    chart: svg(html`<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`),
+    gear: svg(html`<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>`),
+    check: svg(html`<path d="M5 12.5l4.5 4.5L19 7.5"/>`, 14, 3.2),
+    left: svg(html`<path d="M15 6l-6 6 6 6"/>`, 18, 2.2),
+    right: svg(html`<path d="M9 6l6 6-6 6"/>`, 18, 2.2),
+    plus: svg(html`<path d="M12 5v14M5 12h14"/>`, 18, 2.6),
+    sun: svg(html`<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>`, 17),
+    moon: svg(html`<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>`, 17),
+    monitor: svg(html`<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`, 17),
+    sparkle: svg(html`<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>`, 18),
+    close: svg(html`<path d="M6 6l12 12M18 6L6 18"/>`, 16, 2.4),
+    mark: html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#F2B544" stroke-width="2"/><path d="M3 10h18" stroke="#F2B544" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.6" fill="#F2B544"/></svg>`
+  };
+
+  // ---------- small components ----------
+  function MonthNav({ month, setMonth, lang, t }) {
+    return html`<div class="month-nav">
+      <button onClick=${() => setMonth(shiftMonth(month, -1))} aria-label=${t('prev_month')}>${Icon.left}</button>
+      <div class="month-label" aria-live="polite">${mLong(month, lang, true)}</div>
+      <button onClick=${() => setMonth(shiftMonth(month, 1))} aria-label=${t('next_month')}>${Icon.right}</button>
+    </div>`;
+  }
+  function LangSwitch({ lang, setLang }) {
+    return html`<div class="lang" role="group" aria-label="Bahasa / Language">
+      <button aria-pressed=${lang === 'ms'} onClick=${() => setLang('ms')}>BM</button>
+      <button aria-pressed=${lang === 'en'} onClick=${() => setLang('en')}>EN</button>
+    </div>`;
+  }
+
+  const THEMES = [['system', 'th_system', 'monitor'], ['light', 'th_light', 'sun'], ['dark', 'th_dark', 'moon']];
+  function ThemeSwitch({ theme, setTheme, t }) {
+    return html`<div class="lang icons" role="group" aria-label=${t('theme_t')}>
+      ${THEMES.map(([id, k, ic]) => html`<button key=${id} aria-pressed=${theme === id} onClick=${() => setTheme(id)} title=${t(k)} aria-label=${t(k)}>${Icon[ic]}</button>`)}
+    </div>`;
+  }
+  function ThemeCycle({ theme, setTheme, t }) {
+    const i = Math.max(0, THEMES.findIndex(x => x[0] === theme));
+    const next = THEMES[(i + 1) % 3];
+    return html`<button class="theme-cycle" onClick=${() => setTheme(next[0])} aria-label=${t('theme_t') + ': ' + t(THEMES[i][1])} title=${t(THEMES[i][1])}>${Icon[THEMES[i][2]]}</button>`;
+  }
+
+  function Row({ item, ctx, showDefer }) {
+    const { sym, month, today, t, lang, readOnly, onToggle, onEdit, onDefer } = ctx;
+    const st = dueState(item, month, today, t, lang);
+    const meta = [catLabel(item.category, lang), item.recurring ? t('every_month') : t('one_off'), item.note].filter(Boolean).join(' · ');
+    return html`<li class=${'row' + (item.paid ? ' is-paid' : '')}>
+      <button class="check" aria-pressed=${!!item.paid} disabled=${readOnly} aria-label=${(item.paid ? t('mark_unpaid') : t('mark_paid')) + nm(item, lang)} onClick=${() => onToggle(item)}>${item.paid ? html`<span style=${{ color: '#fff', display: 'grid' }}>${Icon.check}</span>` : null}</button>
+      <button class="row-main" disabled=${readOnly} onClick=${() => onEdit(item)} aria-label=${t('edit') + nm(item, lang)}>
+        <span class="row-name">${nm(item, lang)}</span>
+        <span class="row-meta">${meta}</span>
+      </button>
+      <div class="row-end">
+        <span class="amt">${money(sym, item.amount)}</span>
+        <span class="row-tags">
+          ${showDefer && !item.paid && !readOnly ? html`<button class="defer-btn" onClick=${() => onDefer(item)}>${t('move_to', { m: mShort(shiftMonth(month, 1), lang) })}</button>` : null}
+          <span class=${'pill pill-' + st.k}>${st.label}</span>
+        </span>
+      </div>
+    </li>`;
+  }
+
+  // ---------- pages ----------
+  function HomePage({ ctx, v, go, openAdd, onApplyPlan }) {
+    const { sym, t, lang, month, today, readOnly } = ctx;
+    const { income, mustT, deferT, mustPaid, must, defer } = v;
+    const afterMust = income - mustT, afterAll = income - mustT - deferT;
+    const next = mLong(shiftMonth(month, 1), lang);
+    let heroNote;
+    if (!income) heroNote = t('hero_noincome');
+    else if (afterMust < 0) heroNote = t('hero_bad', { a: esc(money(sym, -afterMust)) });
+    else if (afterAll < 0) heroNote = t('hero_warn', { a: esc(money(sym, -afterAll)) });
+    else heroNote = t('hero_good', { a: esc(money(sym, afterAll)) });
+    const paidPct = mustT ? mustPaid / mustT * 100 : 0;
+
+    let status;
+    if (!income) status = { k: 'none', c: 'var(--muted)', ic: '?', title: t('st_none_t'), p: t('st_none_p') };
+    else if (afterAll >= 0) status = { k: 'good', c: 'var(--ok)', ic: '✓', title: t('st_good_t'), p: t('st_good_p', { a: money(sym, afterAll) }) };
+    else if (afterMust >= 0) status = { k: 'warn', c: 'var(--warn)', ic: '!', title: t('st_warn_t'), p: t('st_warn_p', { a: money(sym, -afterAll), m: next }) };
+    else status = { k: 'bad', c: 'var(--must)', ic: '!', title: t('st_bad_t'), p: t('st_bad_p', { a: money(sym, -afterAll) }) };
+    const plan = income && afterAll < 0 ? planDefer(defer.filter(i => !i.paid), -afterAll) : { chosen: [], short: 0 };
+    const toPay = sortItems(must.filter(i => !i.paid), month, today).slice(0, 5);
+
+    return html`<${React.Fragment}>
+      <section class="hero" aria-label=${t('left_after')}>
+        <div class="eyebrow">${t('left_after')}</div>
+        <div class=${'big' + (afterMust < 0 ? ' neg' : '')}>${money(sym, afterMust, true)}</div>
+        <${Rich} tag="p" cls="hero-note" text=${heroNote} />
+        <div class="meter" aria-hidden="true"><span style=${{ width: paidPct + '%', background: 'var(--ok)' }}></span></div>
+        <div class="meter-label"><span>${t('must')}</span><span class="num">${t('paid_of', { a: money(sym, mustPaid, true), b: money(sym, mustT, true) })}</span></div>
+      </section>
+
+      <div class="figures">
+        <button class="figure" onClick=${() => go('settings')}>
+          <span class="figure-label"><span class="dot" style=${{ background: 'var(--ok)' }}></span>${t('income')}</span>
+          <span class="figure-value">${income ? money(sym, income, true) : t('set_income')}</span>
+          <span class="figure-hint">${t('tap_edit')}</span>
+        </button>
+        <button class="figure" onClick=${() => go('expenses', 'must')}>
+          <span class="figure-label"><span class="dot" style=${{ background: 'var(--must)' }}></span>${t('must')}</span>
+          <span class="figure-value">${money(sym, mustT, true)}</span>
+          <span class="figure-hint">${t('n_items', { n: must.length })}</span>
+        </button>
+        <button class="figure" onClick=${() => go('expenses', 'defer')}>
+          <span class="figure-label"><span class="dot" style=${{ background: 'var(--defer)' }}></span>${t('defer')}</span>
+          <span class="figure-value">${money(sym, deferT, true)}</span>
+          <span class="figure-hint">${t('n_items', { n: defer.length })}</span>
+        </button>
+      </div>
+
+      <div class="home-grid">
+        <section class="card">
+          <h2 class="card-title">${t('to_pay')} <button class="link-btn" onClick=${() => go('expenses', 'must')}>${t('see_all')} →</button></h2>
+          ${toPay.length
+            ? html`<ul class="list">${toPay.map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} />`)}</ul>`
+            : html`<div class="empty">${must.length ? t('all_paid') : t('no_must')}</div>`}
+          ${!readOnly && !must.length ? html`<button class="add-inline" onClick=${() => openAdd('must')}>${t('add_must')}</button>` : null}
+        </section>
+        <section class=${'card status ' + status.k}>
+          <div class="status-head">
+            <span class="status-icon" style=${{ background: status.c }} aria-hidden="true">${status.ic}</span>
+            <h3>${status.title}</h3>
+          </div>
+          <p>${status.p}</p>
+          ${plan.chosen.length ? html`<div class="chips">${plan.chosen.map(i => html`<span class="chip" key=${i.id}>${nm(i, lang)} · ${money(sym, i.amount, true)}</span>`)}</div>` : null}
+          ${plan.short > 0 && plan.chosen.length ? html`<p>${t('st_short', { a: money(sym, plan.short) })}</p>` : null}
+          ${plan.chosen.length && !readOnly ? html`<button class="btn-primary" onClick=${() => onApplyPlan(plan.chosen)}>${t('move_n', { m: next })}</button>` : null}
+          ${!income && !readOnly ? html`<button class="btn-primary" onClick=${() => go('settings')}>${t('go_settings')}</button>` : null}
+        </section>
+      </div>
+    <//>`;
+  }
+
+  function ExpensesPage({ ctx, v, tab, setTab, openAdd }) {
+    const { sym, t, month, today, readOnly } = ctx;
+    const [q, setQ] = useState('');
+    const list = tab === 'must' ? v.must : v.defer;
+    const needle = q.trim().toLowerCase();
+    const shown = needle ? list.filter(i => (nm(i, ctx.lang) + ' ' + (i.note || '') + ' ' + catLabel(i.category, ctx.lang)).toLowerCase().includes(needle)) : list;
+    const total = sum(list), paid = sum(list.filter(i => i.paid));
+    const color = tab === 'must' ? 'var(--must)' : 'var(--defer)';
+    return html`<${React.Fragment}>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected=${tab === 'must'} onClick=${() => setTab('must')}>
+          <span class="t"><span class="dot" style=${{ background: 'var(--must)' }}></span>${t('must')}</span><small>${money(sym, v.mustT, true)}</small>
+        </button>
+        <button role="tab" aria-selected=${tab === 'defer'} onClick=${() => setTab('defer')}>
+          <span class="t"><span class="dot" style=${{ background: 'var(--defer)' }}></span>${t('defer')}</span><small>${money(sym, v.deferT, true)}</small>
+        </button>
+      </div>
+      <section class="card" role="tabpanel">
+        <p>${tab === 'must' ? t('must_desc') : t('defer_desc')}</p>
+        <div class="progress" aria-hidden="true"><span style=${{ width: (total ? paid / total * 100 : 0) + '%', background: color }}></span></div>
+        <div class="list-head num"><span>${t('list_paid', { a: money(sym, paid) })}</span><span>${t('list_left', { a: money(sym, total - paid) })}</span></div>
+        ${list.length > 4 ? html`<input id="search" class="search" type="search" value=${q} onInput=${e => setQ(e.target.value)} placeholder=${t('search')} aria-label=${t('search')} />` : null}
+        ${shown.length
+          ? html`<ul class="list">${sortItems(shown, month, today).map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} showDefer=${tab === 'defer'} />`)}</ul>`
+          : html`<div class="empty">${needle ? t('empty_search') : (tab === 'must' ? t('empty_must') : t('empty_defer'))}</div>`}
+        ${!readOnly ? html`<button class="add-inline" onClick=${() => openAdd(tab)}>${tab === 'must' ? t('add_must') : t('add_defer')}</button>` : null}
+      </section>
+    <//>`;
+  }
+
+  function ReportsPage({ ctx, v, allItems, profile, exampleMode }) {
+    const { sym, t, lang, month } = ctx;
+    const months = [-5, -4, -3, -2, -1, 0].map(d => shiftMonth(month, d));
+    const trend = months.map(m => {
+      const its = allItems.filter(i => i.month === m);
+      return { m, must: sum(its.filter(i => i.priority === 'must')), defer: sum(its.filter(i => i.priority !== 'must')) };
+    });
+    const max = Math.max(1, ...trend.map(x => x.must + x.defer));
+    const cats = useMemo(() => {
+      const m = {};
+      v.view.forEach(i => { const c = i.category || 'Other'; m[c] = m[c] || { must: 0, defer: 0 }; m[c][i.priority === 'must' ? 'must' : 'defer'] += Number(i.amount) || 0; });
+      return Object.entries(m).map(([c, x]) => ({ c, must: x.must, defer: x.defer, t: x.must + x.defer })).sort((a, b) => b.t - a.t);
+    }, [v.view]);
+    const cmax = cats.length ? cats[0].t : 1;
+    const total = v.mustT + v.deferT, paid = sum(v.view.filter(i => i.paid));
+    return html`<${React.Fragment}>
+      <section class="card">
+        <h2 class="card-title">${t('month_sum')}</h2>
+        <dl class="kv">
+          <dt>${t('income')}</dt><dd>${money(sym, v.income)}</dd>
+          <dt>${t('must')}</dt><dd style=${{ color: 'var(--must)' }}>${money(sym, v.mustT)}</dd>
+          <dt>${t('defer')}</dt><dd style=${{ color: 'var(--defer)' }}>${money(sym, v.deferT)}</dd>
+          <dt>${t('total_spend')}</dt><dd>${money(sym, total)}</dd>
+          <dt>${t('paid_total')}</dt><dd>${money(sym, paid)}</dd>
+          <dt>${t('unpaid_total')}</dt><dd>${money(sym, total - paid)}</dd>
+          <dt>${t('balance')}</dt><dd style=${{ color: v.income - total < 0 ? 'var(--must)' : 'var(--ok)' }}>${money(sym, v.income - total)}</dd>
+        </dl>
+      </section>
+      <div class="report-grid">
+        <section class="card">
+          <h2 class="card-title">${t('trend')}</h2>
+          <div>
+            <div class="trend" role="img" aria-label=${t('trend')}>
+              ${trend.map(x => html`<div class=${'tcol' + (x.m === month ? ' cur' : '')} key=${x.m}>
+                <span class="tval">${x.must + x.defer ? compact(sym, x.must + x.defer) : ''}</span>
+                <div class="stack" style=${{ height: (x.must + x.defer) / max * 100 * 0.85 + '%' }}>
+                  <span style=${{ flex: x.must, background: 'var(--must)', opacity: x.m === month ? 1 : .75 }}></span>
+                  <span style=${{ flex: x.defer, background: 'var(--defer)', opacity: x.m === month ? 1 : .75 }}></span>
+                </div>
+              </div>`)}
+            </div>
+            <div class="tlabels" style=${{ marginTop: '6px' }}>${months.map(m => html`<span key=${m} class=${m === month ? 'cur' : ''}>${mShort(m, lang)}</span>`)}</div>
+          </div>
+          <div class="legend"><span><i class="dot" style=${{ background: 'var(--must)' }}></i>${t('must')}</span><span><i class="dot" style=${{ background: 'var(--defer)' }}></i>${t('defer')}</span></div>
+        </section>
+        <section class="card">
+          <h2 class="card-title">${t('by_cat')}</h2>
+          ${cats.length ? html`<ul class="cat-list">${cats.map(r => html`<li class="cat-row" key=${r.c}>
+            <div class="cat-top"><span>${catLabel(r.c, lang)}</span><span class="num" style=${{ fontWeight: 700 }}>${money(sym, r.t)}</span></div>
+            <div class="cat-bar" aria-hidden="true"><span style=${{ width: r.must / cmax * 100 + '%', background: 'var(--must)' }}></span><span style=${{ width: r.defer / cmax * 100 + '%', background: 'var(--defer)' }}></span></div>
+          </li>`)}</ul>` : html`<div class="empty">${t('no_data')}</div>`}
+        </section>
+      </div>
+    <//>`;
+  }
+
+  function SettingsPage({ ctx, v, profile, setLang, theme, setTheme, onCurrency, onIncome, carry, onCarry, onClear, backend, loading, exampleMode }) {
+    const { sym, t, lang, month, readOnly } = ctx;
+    const [inc, setInc] = useState(v.income ? String(v.income) : '');
+    const [confirm, setConfirm] = useState(false);
+    useEffect(() => { setInc(v.income ? String(v.income) : ''); setConfirm(false); }, [month, loading]);
+    const saveInc = e => { e.preventDefault(); const n = Math.round(parseFloat(inc) * 100) / 100; if (n >= 0) onIncome(n); };
+    const prevName = mLong(shiftMonth(month, -1), lang);
+    return html`<section class="card set-list">
+      <div class="set-row">
+        <div><h3>${t('lang_t')}</h3><p>${t('lang_p')}</p></div>
+        <div class="lang-big" role="group" aria-label=${t('lang_t')}>
+          <button aria-pressed=${lang === 'ms'} onClick=${() => setLang('ms')}>Bahasa Melayu<small>BM</small></button>
+          <button aria-pressed=${lang === 'en'} onClick=${() => setLang('en')}>English<small>EN</small></button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('theme_t')}</h3><p>${t('theme_p')}</p></div>
+        <div class="lang-big three" role="group" aria-label=${t('theme_t')}>
+          ${THEMES.map(([id, k, ic]) => html`<button key=${id} aria-pressed=${theme === id} onClick=${() => setTheme(id)}><span class="bi">${Icon[ic]}${t(k)}</span></button>`)}
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('inc_t', { m: mLong(month, lang, true) })}</h3><p>${t('inc_p')}</p></div>
+        <form class="inline-form" onSubmit=${saveInc}>
+          <input id="income" class="input num" type="number" inputmode="decimal" min="0" step="0.01" value=${inc} onInput=${e => setInc(e.target.value)} placeholder=${sym + ' 0.00'} aria-label=${t('income')} disabled=${loading} />
+          <button class="btn-primary" type="submit" disabled=${loading}>${t('save')}</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('cur_t')}</h3><p>${t('cur_p')}</p></div>
+        <select id="currency" class="select" value=${sym} onChange=${e => onCurrency(e.target.value)} disabled=${loading} aria-label=${t('cur_t')}>
+          ${CURRENCIES.map(([s, l]) => html`<option key=${s} value=${s}>${l}</option>`)}
+        </select>
+      </div>
+      ${!exampleMode ? html`<${React.Fragment}>
+        <div class="divider"></div>
+        <div class="set-row">
+          <div><h3>${t('carry_t')}</h3><p>${carry.length ? t('carry_p', { n: carry.length, m: prevName }) : t('carry_none')}</p></div>
+          <button class="btn-ghost" onClick=${onCarry} disabled=${!carry.length}>${t('carry_btn')}</button>
+        </div>
+        <div class="divider"></div>
+        <div class="set-row">
+          <div><h3>${t('clear_t')}</h3><p>${t('clear_p', { n: v.view.length, m: mLong(month, lang, true) })}</p></div>
+          <div class="inline-form">
+            ${confirm
+              ? html`<button class="btn-ghost" onClick=${() => setConfirm(false)}>${t('cancel')}</button><button class="btn-danger solid" onClick=${() => { setConfirm(false); onClear(); }}>${t('clear_yes')}</button>`
+              : html`<button class="btn-danger" onClick=${() => setConfirm(true)} disabled=${!v.view.length}>${t('clear_btn')}</button>`}
+          </div>
+        </div>
+      <//>` : null}
+      <div class="divider"></div>
+      <p style=${{ display: 'flex', alignItems: 'center', gap: '8px' }}><span class="dot" style=${{ background: backend === 'db' ? 'var(--ok)' : 'var(--warn)' }}></span>${loading ? t('connecting') : backend === 'db' ? t('store_db') : t('store_local')}</p>
+    </section>`;
+  }
+
+  function Sheet({ init, ctx, onClose, onSave, onDelete }) {
+    const { sym, t, lang, month } = ctx;
+    const item = init.item;
+    const [f, setF] = useState(() => item
+      ? { name: nm(item, lang), amount: String(item.amount), priority: item.priority, category: item.category || 'Other', dueDay: item.dueDay ? String(item.dueDay) : '', recurring: !!item.recurring, note: item.note || '' }
+      : { name: '', amount: '', priority: init.priority || 'must', category: init.priority === 'defer' ? 'Leisure' : 'Utilities', dueDay: '', recurring: true, note: '' });
+    const [err, setErr] = useState('');
+    const [confirmDel, setConfirmDel] = useState(false);
+    const nameRef = useRef(null);
+    useEffect(() => {
+      if (nameRef.current) nameRef.current.focus();
+      const k = e => { if (e.key === 'Escape') onClose(); };
+      window.addEventListener('keydown', k);
+      return () => window.removeEventListener('keydown', k);
+    }, []);
+    const set = (k, val) => setF(x => Object.assign({}, x, { [k]: val }));
+    const submit = e => {
+      e.preventDefault();
+      const amount = Math.round(parseFloat(f.amount) * 100) / 100;
+      if (!f.name.trim()) return setErr(t('e_name'));
+      if (!(amount > 0)) return setErr(t('e_amount'));
+      let due = null;
+      if (String(f.dueDay).trim() !== '') { due = parseInt(f.dueDay, 10); if (isNaN(due) || due < 1 || due > 31) return setErr(t('e_due')); }
+      onSave({ name: f.name.trim().slice(0, 80), amount, priority: f.priority, category: f.category, dueDay: due, recurring: !!f.recurring, note: f.note.trim().slice(0, 120) });
+    };
+    return html`<div class="scrim" onMouseDown=${e => { if (e.target === e.currentTarget) onClose(); }}>
+      <form class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" onSubmit=${submit} noValidate>
+        <div class="sheet-head">
+          <h2 id="sheet-title">${item ? t('sheet_edit') : t('sheet_new')}</h2>
+          <button type="button" class="icon-btn" onClick=${onClose} aria-label=${t('close')}>${Icon.close}</button>
+        </div>
+        <div class="field">
+          <span class="label">${t('type')}</span>
+          <div class="prio" role="radiogroup" aria-label=${t('type')}>
+            <label class=${f.priority === 'must' ? 'on-must' : ''}>
+              <input type="radio" name="prio" id="prio-must" checked=${f.priority === 'must'} onChange=${() => set('priority', 'must')} />
+              <b><span class="dot" style=${{ background: 'var(--must)' }}></span>${t('must')}</b><small>${t('must_ex')}</small>
+            </label>
+            <label class=${f.priority === 'defer' ? 'on-defer' : ''}>
+              <input type="radio" name="prio" id="prio-defer" checked=${f.priority === 'defer'} onChange=${() => set('priority', 'defer')} />
+              <b><span class="dot" style=${{ background: 'var(--defer)' }}></span>${t('defer')}</b><small>${t('defer_ex')}</small>
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-name">${t('f_name')}</label>
+          <input id="f-name" ref=${nameRef} class="input" value=${f.name} onInput=${e => set('name', e.target.value)} placeholder=${t('f_name_ph')} maxLength="80" autoComplete="off" />
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="f-amount">${t('f_amount', { s: sym })}</label>
+            <input id="f-amount" class="input num" type="number" inputmode="decimal" min="0" step="0.01" value=${f.amount} onInput=${e => set('amount', e.target.value)} placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="f-due">${t('f_due')}</label>
+            <input id="f-due" class="input num" type="number" inputmode="numeric" min="1" max="31" value=${f.dueDay} onInput=${e => set('dueDay', e.target.value)} placeholder=${t('f_due_ph')} />
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-cat">${t('f_cat')}</label>
+          <select id="f-cat" class="input" value=${f.category} onChange=${e => set('category', e.target.value)}>
+            ${CATEGORIES.map(c => html`<option key=${c} value=${c}>${catLabel(c, lang)}</option>`)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-note">${t('f_note')}</label>
+          <input id="f-note" class="input" value=${f.note} onInput=${e => set('note', e.target.value)} placeholder=${t('f_note_ph')} maxLength="120" autoComplete="off" />
+        </div>
+        <label class="check-line" for="f-rec">
+          <input id="f-rec" type="checkbox" checked=${f.recurring} onChange=${e => set('recurring', e.target.checked)} />${t('f_rec')}
+        </label>
+        ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+        <div class="sheet-actions">
+          ${item ? (confirmDel
+            ? html`<button type="button" class="btn-danger solid" onClick=${() => onDelete(item)}>${t('delete_yes')}</button>`
+            : html`<button type="button" class="btn-danger" onClick=${() => setConfirmDel(true)}>${t('delete')}</button>`) : null}
+          <div class="right">
+            <button type="button" class="btn-ghost" onClick=${onClose}>${t('cancel')}</button>
+            <button type="submit" class="btn-primary">${item ? t('save_changes') : t('add_to', { m: mLong(month, lang) })}</button>
+          </div>
+        </div>
+      </form>
+    </div>`;
+  }
+
+  // ---------- app ----------
+  const PAGES = ['home', 'expenses', 'reports', 'settings'];
+  function App() {
+    const today = useMemo(() => new Date(), []);
+    const [lang, setLangState] = useState(() => { try { const l = localStorage.getItem(LANG_KEY); if (l === 'en' || l === 'ms') return l; } catch (e) {} return 'ms'; });
+    const [page, setPage] = useState(() => { const h = (location.hash || '').slice(1); return PAGES.includes(h) ? h : 'home'; });
+    const [month, setMonth] = useState(() => monthKey(new Date()));
+    const [loading, setLoading] = useState(true);
+    const [backend, setBackend] = useState(null);
+    const [items, setItems] = useState([]);
+    const [profile, setProfile] = useState({});
+    const [tab, setTab] = useState('must');
+    const [sheet, setSheet] = useState(null);
+    const [toast, setToast] = useState(null);
+    const [theme, setThemeState] = useState(() => { try { const x = localStorage.getItem(THEME_KEY); if (x === 'light' || x === 'dark' || x === 'system') return x; } catch (e) {} return 'system'; });
+    const [demo, setDemo] = useState(null);
+    const [demoIncome, setDemoIncome] = useState(EXAMPLE_INCOME);
+    const r = useRef({ q: {} }).current;
+    const t = useMemo(() => makeT(lang), [lang]);
+    r.t = t;
+
+    const say = msg => { setToast(msg); clearTimeout(r.tt); r.tt = setTimeout(() => setToast(null), 3200); };
+
+    useEffect(() => { document.documentElement.lang = lang === 'ms' ? 'ms' : 'en'; }, [lang]);
+    useEffect(() => {
+      const el = document.documentElement;
+      if (theme === 'system') { if (HOST_THEME) el.setAttribute('data-theme', HOST_THEME); else el.removeAttribute('data-theme'); }
+      else el.setAttribute('data-theme', theme);
+      let dark = theme === 'dark';
+      if (theme === 'system') { try { dark = HOST_THEME ? HOST_THEME === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {} }
+      const m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', dark ? '#0A0E18' : '#F2F4F8');
+    }, [theme]);
+
+    useEffect(() => {
+      let dead = false; const unsubs = [];
+      const useLocal = () => {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null'); } catch (e) {}
+        if (saved) { setItems(Array.isArray(saved.items) ? saved.items : []); setProfile(saved.profile || {}); }
+        setBackend('local'); setLoading(false);
+      };
+      (async () => {
+        const c = window.claude;
+        if (!c || !c.use) return useLocal();
+        let db = null, uid = null;
+        try { const [d, u] = await Promise.all([c.use('db'), c.use('user')]); db = d; uid = u ? await u.id() : null; } catch (e) {}
+        if (dead) return;
+        if (!db || !uid) return useLocal();
+        const prof = db.doc('data/users/' + uid + '/profile');
+        r.prof = prof; r.col = prof.collection('expenses');
+        setBackend('db');
+        let got = false;
+        unsubs.push(prof.onSnapshot(s => {
+          if (r.profPending) return;
+          const p = s.exists ? (s.data() || {}) : {};
+          setProfile(p);
+          if (p.lang === 'ms' || p.lang === 'en') setLangState(p.lang);
+          if (p.theme === 'light' || p.theme === 'dark' || p.theme === 'system') setThemeState(p.theme);
+        }, () => {}));
+        unsubs.push(r.col.onSnapshot(s => {
+          setItems(s.docs.map(d => Object.assign({}, d.data(), { id: d.id })));
+          if (!got) { got = true; setLoading(false); }
+        }, e => { setLoading(false); say(r.t(errKey(e))); }));
+      })();
+      return () => { dead = true; unsubs.forEach(u => u()); };
+    }, []);
+
+    useEffect(() => {
+      if (backend !== 'local' || loading) return;
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ items, profile })); } catch (e) {}
+    }, [items, profile, backend, loading]);
+
+    const api = useMemo(() => {
+      const queue = (key, fn) => { const p = (r.q[key] || Promise.resolve()).then(fn, fn); r.q[key] = p.catch(() => {}); return p; };
+      const guard = p => Promise.resolve(p).catch(e => { say(r.t(errKey(e))); throw e; });
+      if (backend === 'db') return {
+        add: data => { const ref = r.col.doc(); return guard(queue(ref.id, () => ref.set(data))); },
+        update: (id, patch) => guard(queue(id, () => r.col.doc(id).update(patch))),
+        remove: id => guard(queue(id, () => r.col.doc(id).delete())),
+        saveProfile: p => { setProfile(p); r.profPending = true; return guard(queue('__profile', () => r.prof.set(p))).finally(() => { r.profPending = false; }); }
+      };
+      const newId = () => 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      return {
+        add: async data => setItems(xs => xs.concat([Object.assign({}, data, { id: newId() })])),
+        update: async (id, patch) => setItems(xs => xs.map(x => x.id === id ? Object.assign({}, x, patch) : x)),
+        remove: async id => setItems(xs => xs.filter(x => x.id !== id)),
+        saveProfile: async p => setProfile(p)
+      };
+    }, [backend]);
+
+    const sym = profile.currency || 'RM';
+    const exampleMode = !loading && items.length === 0 && !profile.started;
+    useEffect(() => { if (exampleMode && !demo) setDemo(exampleItems(monthKey(today))); if (!exampleMode && demo) setDemo(null); }, [exampleMode]);
+    const source = exampleMode ? (demo || []) : items;
+    const view = source.filter(i => i.month === month);
+    const income = exampleMode ? demoIncome : incomeFor(profile, month);
+    const must = view.filter(i => i.priority === 'must');
+    const defer = view.filter(i => i.priority !== 'must');
+    const v = { view, income, must, defer, mustT: sum(must), deferT: sum(defer), mustPaid: sum(must.filter(i => i.paid)) };
+    const readOnly = loading;
+    const newDemoId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const A = exampleMode ? {
+      add: async d => setDemo(xs => (xs || []).concat([Object.assign({}, d, { id: newDemoId() })])),
+      update: async (id, p) => setDemo(xs => (xs || []).map(x => x.id === id ? Object.assign({}, x, p) : x)),
+      remove: async id => setDemo(xs => (xs || []).filter(x => x.id !== id)),
+      saveProfile: p => api.saveProfile(p)
+    } : api;
+    const nextM = shiftMonth(month, 1);
+    const L = m => mLong(m, lang);
+
+    const carry = useMemo(() => {
+      const prev = source.filter(i => i.month === shiftMonth(month, -1) && i.recurring);
+      const have = new Set(source.filter(i => i.month === month).map(i => i.seriesId || i.id));
+      return prev.filter(i => !have.has(i.seriesId || i.id));
+    }, [source, month]);
+
+    const cleanCopy = (src, m) => ({ name: nm(src, lang), amount: src.amount, priority: src.priority, category: src.category, dueDay: src.dueDay || null, recurring: !!src.recurring, note: src.note || '', month: m, paid: false, seriesId: src.seriesId || src.id, createdAt: Date.now() });
+    const quiet = p => p.catch(() => {});
+
+    const setLang = l => {
+      setLangState(l);
+      try { localStorage.setItem(LANG_KEY, l); } catch (e) {}
+      if (!loading && backend) quiet(api.saveProfile(Object.assign({}, profile, { lang: l })));
+    };
+    const setTheme = x => {
+      setThemeState(x);
+      try { localStorage.setItem(THEME_KEY, x); } catch (e) {}
+      if (!loading && backend) quiet(api.saveProfile(Object.assign({}, profile, { theme: x })));
+    };
+    const onToggle = it => quiet(A.update(it.id, { paid: !it.paid, paidAt: !it.paid ? Date.now() : null }));
+    const onDefer = it => quiet(A.update(it.id, { month: nextM, paid: false, paidAt: null }).then(() => say(t('t_moved', { n: nm(it, lang), m: L(nextM) }))));
+    const onApplyPlan = list => quiet(Promise.all(list.map(it => A.update(it.id, { month: nextM, paid: false, paidAt: null }))).then(() => say(t('t_moved_n', { n: list.length, m: L(nextM) }))));
+    const onCarry = () => quiet(Promise.all(carry.map(src => A.add(cleanCopy(src, month)))).then(() => say(t('t_carry', { n: carry.length }))));
+    const onIncome = n => exampleMode ? (setDemoIncome(n), say(t('t_income', { m: L(month) }))) : quiet(api.saveProfile(Object.assign({}, profile, { incomes: Object.assign({}, profile.incomes || {}, { [month]: n }) })).then(() => say(t('t_income', { m: L(month) }))));
+    const onCurrency = s => quiet(api.saveProfile(Object.assign({}, profile, { currency: s })));
+    const onClear = () => quiet(Promise.all(view.map(i => A.remove(i.id))).then(() => say(t('t_cleared', { m: L(month) }))));
+    const keepDemo = async () => {
+      const list = demo || [];
+      try {
+        await Promise.all(list.map(d => {
+          const c = { name: nm(d, lang), amount: d.amount, priority: d.priority, category: d.category, dueDay: d.dueDay || null, recurring: !!d.recurring, note: d.note || '', month: d.month, paid: !!d.paid, paidAt: d.paidAt || null, createdAt: Date.now() };
+          if (d.seriesId) c.seriesId = d.seriesId;
+          return api.add(c);
+        }));
+        await api.saveProfile(Object.assign({}, profile, { lang, theme, started: true, incomes: Object.assign({}, profile.incomes || {}, { [monthKey(today)]: demoIncome }) }));
+        say(t('t_demo_saved'));
+      } catch (e) {}
+    };
+    const startEmpty = () => quiet(api.saveProfile(Object.assign({}, profile, { lang, theme, started: true })).then(() => say(t('t_demo_cleared'))));
+    const openAdd = kind => { const k = kind || (page === 'expenses' ? tab : 'must'); setSheet({ priority: k }); };
+    const onSave = data => {
+      const p = sheet.item
+        ? A.update(sheet.item.id, sheet.item.i18n ? Object.assign({}, data, { i18n: null }) : data).then(() => say(t('t_saved')))
+        : A.add(Object.assign({}, data, { month, paid: false, createdAt: Date.now() })).then(() => say(t('t_added', { n: data.name })));
+      setSheet(null); quiet(p);
+    };
+    const onDelete = it => { setSheet(null); quiet(A.remove(it.id).then(() => say(t('t_deleted', { n: nm(it, lang) })))); };
+    const go = (p, tb) => { setPage(p); if (tb) setTab(tb); try { history.replaceState(null, '', '#' + p); } catch (e) {} window.scrollTo(0, 0); };
+
+    const ctx = { sym, t, lang, month, today, readOnly, onToggle, onDefer, onEdit: it => setSheet({ item: it }) };
+    const NAV = [['home', t('nav_home'), Icon.home], ['expenses', t('nav_exp'), Icon.list], ['reports', t('nav_rep'), Icon.chart], ['settings', t('nav_set'), Icon.gear]];
+    const titles = { home: [t('nav_home'), t('home_sub', { m: mLong(month, lang, true) })], expenses: [t('nav_exp'), t('exp_sub', { m: mLong(month, lang, true) })], reports: [t('nav_rep'), t('rep_sub', { m: mLong(month, lang, true) })], settings: [t('nav_set'), t('set_sub')] };
+    const isNow = month === monthKey(today);
+
+    let body;
+    if (loading) body = html`<section class="card"><div class="empty">${t('loading')}</div></section>`;
+    else if (page === 'home') body = html`<${HomePage} ctx=${ctx} v=${v} go=${go} openAdd=${openAdd} onApplyPlan=${onApplyPlan} />`;
+    else if (page === 'expenses') body = html`<${ExpensesPage} ctx=${ctx} v=${v} tab=${tab} setTab=${setTab} openAdd=${openAdd} />`;
+    else if (page === 'reports') body = html`<${ReportsPage} ctx=${ctx} v=${v} allItems=${source} profile=${profile} exampleMode=${exampleMode} />`;
+    if (page === 'settings') body = html`<${SettingsPage} ctx=${ctx} v=${v} profile=${profile} setLang=${setLang} theme=${theme} setTheme=${setTheme} onCurrency=${onCurrency} onIncome=${onIncome} carry=${carry} onCarry=${onCarry} onClear=${onClear} backend=${backend} loading=${loading} exampleMode=${exampleMode} />`;
+
+    return html`<div class="shell">
+      <nav class="side" aria-label="Menu">
+        <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Paycheck<br/>Planner</div></div>
+        ${NAV.map(([id, label, ic]) => html`<button key=${id} class="side-link" aria-current=${page === id ? 'page' : undefined} onClick=${() => go(id)}>${ic}${label}</button>`)}
+        <button class="btn-primary side-add" onClick=${() => openAdd()} disabled=${loading}>${Icon.plus}${t('add_expense')}</button>
+        <div class="side-foot"><${ThemeSwitch} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+      </nav>
+
+      <main class="content">
+        <div class="mobile-brand">
+          <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Paycheck Planner</div></div>
+          <div class="mobile-tools"><${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+        </div>
+        <header class="page-head">
+          <div><h1 class="page-title">${titles[page][0]}</h1><p class="page-sub">${titles[page][1]}</p></div>
+          <div class="head-tools">
+            ${!isNow ? html`<button class="btn-ghost" onClick=${() => setMonth(monthKey(today))}>${t('this_month')}</button>` : null}
+            <${MonthNav} month=${month} setMonth=${setMonth} lang=${lang} t=${t} />
+          </div>
+        </header>
+
+        ${exampleMode && page !== 'settings' ? html`<div class="banner">
+          <div class="banner-body"><span class="banner-ic">${Icon.sparkle}</span><${Rich} tag="p" text=${t('ex_banner')} /></div>
+          <div class="banner-actions">
+            <button class="btn-ghost" onClick=${startEmpty}>${t('ex_clear')}</button>
+            <button class="btn-primary" onClick=${keepDemo}>${t('ex_save')}</button>
+          </div>
+        </div>` : null}
+        ${carry.length && (page === 'home' || page === 'expenses') ? html`<div class="banner">
+          <${Rich} tag="p" text=${t('carry_banner', { n: carry.length, m: esc(L(shiftMonth(month, -1))), a: esc(money(sym, sum(carry))) })} />
+          <div class="banner-actions"><button class="btn-primary" onClick=${onCarry}>${t('carry_add')}</button></div>
+        </div>` : null}
+
+        ${body}
+      </main>
+
+      <nav class="bottom-nav" aria-label="Menu">
+        ${NAV.map(([id, label, ic]) => html`<button key=${id} aria-current=${page === id ? 'page' : undefined} onClick=${() => go(id)}><span class="ic">${ic}</span>${label}</button>`)}
+      </nav>
+      ${!loading && page !== 'settings' ? html`<button class="fab" onClick=${() => openAdd()}>${Icon.plus}${t('add')}</button>` : null}
+      ${sheet ? html`<${Sheet} init=${sheet} ctx=${ctx} onClose=${() => setSheet(null)} onSave=${onSave} onDelete=${onDelete} />` : null}
+      ${toast ? html`<div class="toast" role="status">${toast}</div>` : null}
+    </div>`;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);
+})();
+</script>
+
+</body>
+</html>
