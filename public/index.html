@@ -97,14 +97,20 @@ button:disabled { cursor: default; }
 .fab { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 31; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; border-radius: 999px; padding: 13px 18px; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 10px 28px -8px rgba(0,0,0,.45); }
 
 /* ---------- page header ---------- */
-.page-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 14px; flex-wrap: wrap; }
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.head-text { min-width: 0; flex: 1 1 auto; padding-top: 2px; }
 .page-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -.015em; }
 .page-sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
-.head-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.month-nav { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
-.month-nav button { border: 0; background: transparent; width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; color: var(--muted); }
-.month-nav button:hover { background: var(--surface-2); color: var(--fg); }
-.month-label { min-width: 128px; text-align: center; font-weight: 700; font-size: 14px; }
+.head-tools { display: grid; justify-items: end; gap: 4px; flex: none; }
+.today-link { border: 0; background: none; padding: 2px 4px; color: var(--defer); font-weight: 600; font-size: 12.5px; }
+.month-nav { display: flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 4px; box-shadow: 0 1px 2px rgba(20,27,45,.05); }
+.mn-arrow { border: 0; background: var(--surface-2); width: 32px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex: none; }
+.mn-arrow:hover { background: color-mix(in srgb, var(--accent) 22%, var(--surface-2)); color: var(--fg); }
+.month-label { display: flex; align-items: center; gap: 8px; padding: 0 10px; min-width: 124px; }
+.mn-cal { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--fg); flex: none; }
+.mn-text { display: grid; line-height: 1.1; }
+.mn-text b { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+.mn-text small { font-size: 11.5px; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
 .lang { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .lang button { border: 0; background: transparent; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
 .lang button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
@@ -326,7 +332,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { transform: translateY(16px); opacity: .6; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-@media (max-width: 420px) { .month-label { min-width: 108px; font-size: 13px; } .hero { padding: 18px; } .page-title { font-size: 23px; } }
+@media (max-width: 420px) { .month-label { min-width: 0; padding: 0 6px; gap: 6px; } .mn-cal { display: none; } .mn-text b { font-size: 13.5px; } .hero { padding: 18px; } .page-title { font-size: 23px; } .page-sub { font-size: 13px; } }
 </style>
 
 <div id="root">
@@ -347,7 +353,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       nav_home: 'Utama', nav_exp: 'Perbelanjaan', nav_rep: 'Laporan', nav_set: 'Tetapan',
       n_items: '{n} item', add: 'Tambah', add_expense: 'Tambah perbelanjaan', loading: 'Memuatkan perbelanjaan anda…',
       prev_month: 'Bulan sebelum', next_month: 'Bulan seterusnya', this_month: 'Bulan ini',
-      home_sub: 'Ringkasan kewangan {m}',
+      home_sub: 'Ringkasan kewangan bulanan anda',
       left_after: 'Baki selepas bil wajib',
       hero_noincome: 'Masukkan <b>pendapatan bulanan</b> anda untuk melihat baki.',
       hero_bad: 'Bil wajib melebihi pendapatan sebanyak <b>{a}</b>.',
@@ -363,7 +369,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       move_n: 'Pindahkan ke {m}', go_settings: 'Buka Tetapan',
       to_pay: 'Perlu dibayar', see_all: 'Lihat semua', all_paid: 'Semua bil wajib bulan ini sudah dibayar.',
       no_must: 'Tiada bil wajib lagi. Tambah sewa, pinjaman atau utiliti.',
-      exp_sub: 'Senarai perbelanjaan {m}', search: 'Cari perbelanjaan…',
+      exp_sub: 'Semua bil dan perbelanjaan anda', search: 'Cari perbelanjaan…',
       must_desc: 'Bil yang ada denda atau kesan jika lewat', defer_desc: 'Perbelanjaan yang boleh tunggu sebulan',
       list_paid: '{a} sudah dibayar', list_left: '{a} belum dibayar',
       empty_must: 'Tiada bil wajib untuk bulan ini.', empty_defer: 'Tiada perbelanjaan boleh tangguh untuk bulan ini.', empty_search: 'Tiada padanan untuk carian ini.',
@@ -371,7 +377,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       move_to: 'Ke {m}', every_month: 'Setiap bulan', one_off: 'Sekali sahaja',
       paid: 'Dibayar', anytime: 'Bila-bila', overdue: 'Lewat', overdue_d: 'Lewat {d} hari', due_today: 'Hari ini', due_in: '{d} hari lagi', due_on: '{d} {m}',
       mark_paid: 'Tandakan dibayar: ', mark_unpaid: 'Tandakan belum dibayar: ', edit: 'Ubah ',
-      rep_sub: 'Analisis perbelanjaan {m}', trend: 'Trend 6 bulan', by_cat: 'Mengikut kategori', month_sum: 'Ringkasan bulan',
+      rep_sub: 'Analisis perbelanjaan anda', trend: 'Trend 6 bulan', by_cat: 'Mengikut kategori', month_sum: 'Ringkasan bulan',
       total_spend: 'Jumlah perbelanjaan', paid_total: 'Sudah dibayar', unpaid_total: 'Belum dibayar', balance: 'Baki akhir', no_data: 'Tiada data untuk bulan ini.',
       set_sub: 'Bahasa, mata wang dan data anda', lang_t: 'Bahasa', lang_p: 'Pilih bahasa paparan aplikasi.',
       cur_t: 'Mata wang', cur_p: 'Simbol yang dipaparkan pada semua jumlah.',
@@ -412,7 +418,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       nav_home: 'Home', nav_exp: 'Expenses', nav_rep: 'Reports', nav_set: 'Settings',
       n_items: '{n} items', add: 'Add', add_expense: 'Add expense', loading: 'Loading your expenses…',
       prev_month: 'Previous month', next_month: 'Next month', this_month: 'This month',
-      home_sub: 'Your money in {m}',
+      home_sub: 'Your monthly money overview',
       left_after: 'Left after must-pay bills',
       hero_noincome: 'Enter your <b>monthly income</b> to see what is left.',
       hero_bad: 'Must-pay bills are <b>{a}</b> more than your income.',
@@ -428,7 +434,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       move_n: 'Move to {m}', go_settings: 'Open Settings',
       to_pay: 'Still to pay', see_all: 'See all', all_paid: 'All must-pay bills for this month are paid.',
       no_must: 'No must-pay bills yet. Add rent, loans or utilities.',
-      exp_sub: 'Expenses for {m}', search: 'Search expenses…',
+      exp_sub: 'All your bills and spending', search: 'Search expenses…',
       must_desc: 'Bills with a penalty or real harm if late', defer_desc: 'Spending that can wait a month',
       list_paid: '{a} paid', list_left: '{a} to go',
       empty_must: 'No must-pay bills this month.', empty_defer: 'Nothing to defer this month.', empty_search: 'Nothing matches this search.',
@@ -436,7 +442,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       move_to: 'To {m}', every_month: 'Every month', one_off: 'One-off',
       paid: 'Paid', anytime: 'Anytime', overdue: 'Overdue', overdue_d: 'Overdue {d}d', due_today: 'Due today', due_in: 'In {d} days', due_on: '{d} {m}',
       mark_paid: 'Mark as paid: ', mark_unpaid: 'Mark as unpaid: ', edit: 'Edit ',
-      rep_sub: 'Spending analysis for {m}', trend: '6-month trend', by_cat: 'By category', month_sum: 'Month summary',
+      rep_sub: 'Your spending analysis', trend: '6-month trend', by_cat: 'By category', month_sum: 'Month summary',
       total_spend: 'Total spending', paid_total: 'Paid', unpaid_total: 'Unpaid', balance: 'Final balance', no_data: 'No data for this month.',
       set_sub: 'Language, currency and your data', lang_t: 'Language', lang_p: 'Choose the app’s display language.',
       cur_t: 'Currency', cur_p: 'The symbol shown on every amount.',
@@ -616,6 +622,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     monitor: svg(html`<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`, 17),
     sparkle: svg(html`<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>`, 18),
     lock: svg(html`<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>`, 16),
+    cal: svg(html`<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>`, 16),
     back: svg(html`<path d="M20 12H5M11 6l-6 6 6 6"/>`, 20),
     close: svg(html`<path d="M6 6l12 12M18 6L6 18"/>`, 16, 2.4),
     mark: html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#F2B544" stroke-width="2"/><path d="M3 10h18" stroke="#F2B544" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.6" fill="#F2B544"/></svg>`
@@ -623,10 +630,14 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 
   // ---------- small components ----------
   function MonthNav({ month, setMonth, lang, t }) {
+    const y = parseM(month)[0];
     return html`<div class="month-nav">
-      <button onClick=${() => setMonth(shiftMonth(month, -1))} aria-label=${t('prev_month')}>${Icon.left}</button>
-      <div class="month-label" aria-live="polite">${mLong(month, lang, true)}</div>
-      <button onClick=${() => setMonth(shiftMonth(month, 1))} aria-label=${t('next_month')}>${Icon.right}</button>
+      <button class="mn-arrow" onClick=${() => setMonth(shiftMonth(month, -1))} aria-label=${t('prev_month')}>${Icon.left}</button>
+      <div class="month-label" aria-live="polite">
+        <span class="mn-cal" aria-hidden="true">${Icon.cal}</span>
+        <span class="mn-text"><b>${mLong(month, lang)}</b><small>${y}</small></span>
+      </div>
+      <button class="mn-arrow" onClick=${() => setMonth(shiftMonth(month, 1))} aria-label=${t('next_month')}>${Icon.right}</button>
     </div>`;
   }
   function LangSwitch({ lang, setLang }) {
@@ -1431,10 +1442,13 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
           <div class="mobile-tools">${me ? html`<button class="me-btn" onClick=${() => r.lock(false)} aria-label=${t('lock_now') + ' (' + me.name + ')'} title=${t('lock_now')}><${Avatar} p=${me} size="sm" /></button>` : null}<${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
         </div>
         <header class="page-head">
-          <div><h1 class="page-title">${titles[page][0]}</h1><p class="page-sub">${titles[page][1]}</p></div>
+          <div class="head-text">
+            <h1 class="page-title">${titles[page][0]}</h1>
+            <p class="page-sub">${titles[page][1]}</p>
+          </div>
           <div class="head-tools">
-            ${!isNow ? html`<button class="btn-ghost" onClick=${() => setMonth(monthKey(today))}>${t('this_month')}</button>` : null}
             <${MonthNav} month=${month} setMonth=${setMonth} lang=${lang} t=${t} />
+            ${!isNow ? html`<button class="today-link" onClick=${() => setMonth(monthKey(today))}>↺ ${t('this_month')}</button>` : null}
           </div>
         </header>
 
