@@ -1,3 +1,4 @@
 *
 !public
-!nginx.conf
+!server.js
+!reset-pin.js

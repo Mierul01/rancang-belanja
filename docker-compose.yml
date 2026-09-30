@@ -1,8 +1,13 @@
 services:
   web:
     build: .
-    image: paycheck-planner:latest
-    container_name: paycheck-planner
+    image: rancang-belanja:latest
+    container_name: rancang-belanja
     ports:
-      - "8088:80"
+      - "8088:3000"
+    volumes:
+      - rancang_data:/data
     restart: unless-stopped
+
+volumes:
+  rancang_data:

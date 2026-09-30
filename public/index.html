@@ -11,11 +11,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Paycheck">
+<meta name="apple-mobile-web-app-title" content="Belanja">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>Paycheck Planner</title>
+<title>Rancang Belanja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
@@ -249,6 +249,51 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 @media (max-width: 420px) { .lang-big { min-width: 0; width: 100%; } }
 .divider { height: 1px; background: var(--line); }
 
+/* ---------- lock screen ---------- */
+.gate { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding-inline: 16px; padding-block: 24px; }
+.gate-card { width: 100%; max-width: 460px; display: grid; gap: 22px; }
+.gate-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.gate-top .brand { padding: 0; }
+.gate-head { display: grid; gap: 6px; text-align: center; }
+.gate-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; letter-spacing: -.015em; text-wrap: balance; }
+.gate-head p { margin: 0; color: var(--muted); font-size: 15px; text-wrap: pretty; }
+.who { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.who button { border: 1px solid var(--line); background: var(--surface); border-radius: 22px; padding: 22px 12px 18px; display: grid; justify-items: center; gap: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 1px 2px rgba(20,27,45,.05); transition: border-color .15s, transform .15s; min-width: 0; }
+.who button span.nm { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who button:hover { border-color: var(--accent); transform: translateY(-2px); }
+.avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 26px; flex: none; }
+.avatar.sm { width: 32px; height: 32px; font-size: 14px; }
+.avatar.md { width: 72px; height: 72px; font-size: 30px; }
+.pin-who { display: grid; justify-items: center; gap: 10px; }
+.pin-who b { font-size: 18px; }
+.pin-dots { display: flex; justify-content: center; gap: 14px; height: 18px; }
+.pin-dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); transition: background .12s, border-color .12s; }
+.pin-dots i.on { background: var(--fg); border-color: var(--fg); }
+.pin-dots.bad i { border-color: var(--must); }
+.pin-dots.bad i.on { background: var(--must); }
+.shake { animation: shake .35s ease; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.pin-msg { min-height: 21px; margin: 0; text-align: center; color: var(--must); font-size: 14px; font-weight: 600; }
+.keypad { display: grid; grid-template-columns: repeat(3, 74px); gap: 14px 24px; justify-content: center; }
+.keypad button { width: 74px; height: 74px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-family: var(--font-display); font-size: 27px; font-weight: 600; display: grid; place-items: center; transition: background .1s, transform .1s; }
+.keypad button:active:not(:disabled) { background: var(--surface-2); transform: scale(.94); }
+.keypad button.ghost { border: 0; background: transparent; font-family: var(--font-body); font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.gate-link { justify-self: center; border: 0; background: none; color: var(--defer); font-weight: 600; font-size: 14px; padding: 6px 10px; }
+.setup-row { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.setup-row-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.setup-row-head b { display: flex; align-items: center; gap: 10px; }
+.setup-row .field .input { width: 100%; }
+.setup-list { display: grid; gap: 12px; }
+.user-chip { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+.user-chip b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.lock-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; color: var(--fg); }
+.lock-btn:hover { border-color: var(--muted); }
+.me-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px; display: grid; place-items: center; }
+.sub-form { display: grid; gap: 10px; padding: 14px; border-radius: 14px; background: var(--surface-2); }
+.sub-form .two .input, .sub-form .input { width: 100%; }
+.sub-form .form-err { margin: 0; }
+@media (max-width: 380px) { .keypad { grid-template-columns: repeat(3, 66px); gap: 12px 20px; } .keypad button { width: 66px; height: 66px; font-size: 24px; } }
+
 /* ---------- sheet ---------- */
 .scrim { position: fixed; inset: 0; background: rgba(8,12,24,.5); z-index: 50; display: flex; align-items: flex-end; justify-content: center; animation: fade .15s ease; }
 @media (min-width: 640px) { .scrim { align-items: center; padding: 24px; } }
@@ -285,7 +330,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 </style>
 
 <div id="root">
-  <div class="content"><div class="hero"><div class="eyebrow">Paycheck Planner</div><p class="hero-note">Memuatkan perbelanjaan anda…</p></div></div>
+  <div class="content"><div class="hero"><div class="eyebrow">Rancang Belanja</div><p class="hero-note">Memuatkan perbelanjaan anda…</p></div></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
@@ -338,6 +383,19 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       ex_save: 'Simpan sebagai data saya', ex_clear: 'Mula senarai kosong',
       t_demo_saved: 'Contoh disimpan sebagai data anda.', t_demo_cleared: 'Senarai kosong sedia. Tambah perbelanjaan pertama anda.',
       theme_t: 'Tema paparan', theme_p: 'Cerah, gelap, atau ikut tetapan peranti.', th_system: 'Sistem', th_light: 'Cerah', th_dark: 'Gelap',
+      gate_who: 'Siapa yang guna?', gate_sub: 'Pilih nama anda, kemudian masukkan PIN.',
+      pin_enter: 'Masukkan PIN anda', pin_wrong: 'PIN salah. {n} cubaan lagi.', pin_locked: 'Terlalu banyak cubaan. Cuba lagi dalam {n} minit.',
+      pin_net: 'Tidak dapat menyambung ke pelayan. Semak sambungan dan cuba lagi.', switch_user: 'Tukar pengguna', del_digit: 'Padam', pin_ok: 'OK',
+      setup_t: 'Sediakan profil', setup_p: 'Buat satu profil untuk setiap orang. Setiap profil ada PIN sendiri dan hanya boleh melihat datanya sendiri.',
+      setup_person: 'Orang {n}', setup_name: 'Nama', setup_ph1: 'cth. Saya', setup_ph2: 'cth. Mak', setup_ph: 'cth. Ayah',
+      setup_pin: 'PIN (4 hingga 6 nombor)', setup_pin2: 'Ulang PIN', setup_add: '+ Tambah orang', setup_remove: 'Buang', setup_go: 'Simpan dan mula',
+      e_setup_name: 'Setiap profil perlukan nama.', e_setup_pin: 'PIN mestilah 4 hingga 6 nombor.', e_setup_match: 'PIN ulangan tidak sama.', e_setup_dupe: 'Setiap profil perlu nama yang berbeza.',
+      lock: 'Kunci', prof_t: 'Profil & keselamatan', prof_p: 'Anda sedang menggunakan profil {n}.',
+      prof_name: 'Nama profil', pin_change: 'Tukar PIN', pin_cur: 'PIN semasa', pin_new: 'PIN baharu', pin_new2: 'Ulang PIN baharu',
+      prof_add: 'Tambah profil baharu', prof_add_p: 'Untuk ahli keluarga lain, maksimum 6 profil.', lock_now: 'Kunci sekarang', lock_p: 'Aplikasi juga dikunci sendiri selepas 15 minit tidak digunakan.',
+      t_pin_changed: 'PIN ditukar. Peranti lain untuk profil ini telah dilog keluar.', t_renamed: 'Nama dikemas kini.', t_prof_added: 'Profil {n} ditambah.', t_expired: 'Sesi tamat. Sila masukkan PIN semula.', t_locked: 'Aplikasi dikunci.',
+      e_pin_cur: 'PIN semasa salah.', e_too_many: 'Sudah ada 6 profil, iaitu had maksimum.',
+      store_server: 'Disimpan di pelayan rumah anda, dalam profil {n}. Dilindungi PIN.',
       carry_banner: '<strong>{n} item berulang</strong> dari {m} belum ditambah ({a}).', carry_add: 'Tambah sekarang',
       sheet_new: 'Tambah perbelanjaan', sheet_edit: 'Ubah perbelanjaan', type: 'Jenis',
       must_ex: 'Sewa, pinjaman, utiliti, takaful', defer_ex: 'Kehendak yang boleh tunggu',
@@ -390,6 +448,19 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       ex_save: 'Keep as my data', ex_clear: 'Start with an empty list',
       t_demo_saved: 'Examples saved as your data.', t_demo_cleared: 'Empty list ready. Add your first expense.',
       theme_t: 'Appearance', theme_p: 'Light, dark, or follow your device.', th_system: 'System', th_light: 'Light', th_dark: 'Dark',
+      gate_who: 'Who’s using the app?', gate_sub: 'Choose your name, then enter your PIN.',
+      pin_enter: 'Enter your PIN', pin_wrong: 'Wrong PIN. {n} tries left.', pin_locked: 'Too many tries. Try again in {n} min.',
+      pin_net: 'Cannot reach the server. Check the connection and try again.', switch_user: 'Switch user', del_digit: 'Delete', pin_ok: 'OK',
+      setup_t: 'Set up profiles', setup_p: 'Create one profile for each person. Every profile has its own PIN and only sees its own data.',
+      setup_person: 'Person {n}', setup_name: 'Name', setup_ph1: 'e.g. Me', setup_ph2: 'e.g. Mom', setup_ph: 'e.g. Dad',
+      setup_pin: 'PIN (4 to 6 digits)', setup_pin2: 'Repeat PIN', setup_add: '+ Add person', setup_remove: 'Remove', setup_go: 'Save and start',
+      e_setup_name: 'Every profile needs a name.', e_setup_pin: 'PIN must be 4 to 6 digits.', e_setup_match: 'The repeated PIN does not match.', e_setup_dupe: 'Each profile needs a different name.',
+      lock: 'Lock', prof_t: 'Profile & security', prof_p: 'You are using the profile {n}.',
+      prof_name: 'Profile name', pin_change: 'Change PIN', pin_cur: 'Current PIN', pin_new: 'New PIN', pin_new2: 'Repeat new PIN',
+      prof_add: 'Add a new profile', prof_add_p: 'For another family member, up to 6 profiles.', lock_now: 'Lock now', lock_p: 'The app also locks itself after 15 minutes without use.',
+      t_pin_changed: 'PIN changed. Other devices using this profile were signed out.', t_renamed: 'Name updated.', t_prof_added: 'Profile {n} added.', t_expired: 'Session ended. Please enter your PIN again.', t_locked: 'App locked.',
+      e_pin_cur: 'Current PIN is wrong.', e_too_many: 'There are already 6 profiles, the maximum.',
+      store_server: 'Saved on your home server, in the profile {n}. Protected by PIN.',
       carry_banner: '<strong>{n} recurring items</strong> from {m} are not added yet ({a}).', carry_add: 'Add them now',
       sheet_new: 'Add expense', sheet_edit: 'Edit expense', type: 'Type',
       must_ex: 'Rent, loans, utilities, insurance', defer_ex: 'Wants that can wait',
@@ -420,6 +491,25 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
   const THEME_KEY = 'paycheck-planner-theme';
   const HOST_THEME = document.documentElement.getAttribute('data-theme');
   const nm = (i, lang) => i.i18n ? i.i18n[lang] : i.name;
+  const SESSION_KEY = 'rancang-belanja-session';
+  const AUTO_LOCK_MS = 15 * 60 * 1000;
+  const initial = n => (String(n || '?').trim()[0] || '?').toUpperCase();
+
+  // Talks to server.js when the app is served by it (Docker). Absent elsewhere.
+  const srv = {
+    token: null,
+    async call(method, path, body, keepalive) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (srv.token) headers.Authorization = 'Bearer ' + srv.token;
+      const res = await fetch('/api' + path, { method, headers, body: body ? JSON.stringify(body) : undefined, keepalive: !!keepalive });
+      let data = null;
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok) throw Object.assign(new Error((data && data.error) || 'http_' + res.status), { status: res.status, data: data || {} });
+      return data || {};
+    },
+    getToken() { try { return sessionStorage.getItem(SESSION_KEY); } catch (e) { return null; } },
+    setToken(tok) { srv.token = tok; try { if (tok) sessionStorage.setItem(SESSION_KEY, tok); else sessionStorage.removeItem(SESSION_KEY); } catch (e) {} }
+  };
   const EXAMPLE_INCOME = 5200;
 
   function makeT(lang) {
@@ -525,6 +615,8 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     moon: svg(html`<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>`, 17),
     monitor: svg(html`<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`, 17),
     sparkle: svg(html`<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>`, 18),
+    lock: svg(html`<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>`, 16),
+    back: svg(html`<path d="M20 12H5M11 6l-6 6 6 6"/>`, 20),
     close: svg(html`<path d="M6 6l12 12M18 6L6 18"/>`, 16, 2.4),
     mark: html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#F2B544" stroke-width="2"/><path d="M3 10h18" stroke="#F2B544" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.6" fill="#F2B544"/></svg>`
   };
@@ -733,7 +825,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     <//>`;
   }
 
-  function SettingsPage({ ctx, v, profile, setLang, theme, setTheme, onCurrency, onIncome, carry, onCarry, onClear, backend, loading, exampleMode }) {
+  function SettingsPage({ ctx, v, profile, meName, setLang, theme, setTheme, onCurrency, onIncome, carry, onCarry, onClear, backend, loading, exampleMode }) {
     const { sym, t, lang, month, readOnly } = ctx;
     const [inc, setInc] = useState(v.income ? String(v.income) : '');
     const [confirm, setConfirm] = useState(false);
@@ -787,7 +879,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
         </div>
       <//>` : null}
       <div class="divider"></div>
-      <p style=${{ display: 'flex', alignItems: 'center', gap: '8px' }}><span class="dot" style=${{ background: backend === 'db' ? 'var(--ok)' : 'var(--warn)' }}></span>${loading ? t('connecting') : backend === 'db' ? t('store_db') : t('store_local')}</p>
+      <p style=${{ display: 'flex', alignItems: 'center', gap: '8px' }}><span class="dot" style=${{ background: backend === 'db' || backend === 'server' ? 'var(--ok)' : 'var(--warn)' }}></span>${loading ? t('connecting') : backend === 'db' ? t('store_db') : backend === 'server' ? t('store_server', { n: meName }) : t('store_local')}</p>
     </section>`;
   }
 
@@ -876,6 +968,186 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     </div>`;
   }
 
+  // ---------- lock screen ----------
+  function Avatar({ p, size }) {
+    return html`<span class=${'avatar' + (size ? ' ' + size : '')} style=${{ background: p.color || 'var(--defer)' }} aria-hidden="true">${initial(p.name)}</span>`;
+  }
+
+  function PinPad({ profile, t, onSubmit, onBack }) {
+    const [pin, setPin] = useState('');
+    const [msg, setMsg] = useState('');
+    const [bad, setBad] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const len = profile.pinLen || 4;
+    const st = useRef({}).current;
+    st.pin = pin; st.busy = busy;
+    const submit = async value => {
+      setBusy(true); setMsg('');
+      const err = await onSubmit(value);
+      if (!err) return;
+      setBusy(false); setPin(''); setBad(true);
+      setTimeout(() => setBad(false), 400);
+      if (err.error === 'locked') setMsg(t('pin_locked', { n: Math.max(1, Math.ceil((err.retryAfterSec || 60) / 60)) }));
+      else if (err.error === 'wrong_pin') setMsg(t('pin_wrong', { n: err.attemptsLeft }));
+      else setMsg(t('pin_net'));
+    };
+    const press = d => {
+      if (st.busy) return;
+      const next = (st.pin + d).slice(0, 6);
+      setPin(next);
+      if (next.length === len) submit(next);
+    };
+    const del = () => { if (!st.busy) setPin(p => p.slice(0, -1)); };
+    useEffect(() => {
+      const k = e => {
+        if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+        else if (e.key === 'Backspace') { e.preventDefault(); del(); }
+        else if (e.key === 'Escape' && onBack) onBack();
+      };
+      window.addEventListener('keydown', k);
+      return () => window.removeEventListener('keydown', k);
+    }, []);
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    return html`<div class="gate-card">
+      <div class="pin-who"><${Avatar} p=${profile} size="md" /><b>${profile.name}</b><span style=${{ color: 'var(--muted)' }}>${t('pin_enter')}</span></div>
+      <div class=${'pin-dots' + (bad ? ' bad shake' : '')} role="status" aria-label=${pin.length + ' / ' + len}>
+        ${Array.from({ length: len }, (_, i) => html`<i key=${i} class=${i < pin.length ? 'on' : ''}></i>`)}
+      </div>
+      <p class="pin-msg" role="alert">${msg}</p>
+      <div class="keypad">
+        ${keys.map(k => html`<button key=${k} onClick=${() => press(k)} disabled=${busy}>${k}</button>`)}
+        ${onBack ? html`<button class="ghost" onClick=${onBack} aria-label=${t('switch_user')}>${Icon.back}</button>` : html`<span></span>`}
+        <button onClick=${() => press('0')} disabled=${busy}>0</button>
+        <button class="ghost" onClick=${del} disabled=${busy || !pin.length}>${t('del_digit')}</button>
+      </div>
+    </div>`;
+  }
+
+  function SetupForm({ t, onDone }) {
+    const blank = () => ({ name: '', pin: '', pin2: '' });
+    const [rows, setRows] = useState([blank(), blank()]);
+    const [err, setErr] = useState('');
+    const [busy, setBusy] = useState(false);
+    const set = (i, k, v) => setRows(rs => rs.map((r, j) => j === i ? Object.assign({}, r, { [k]: k === 'name' ? v : v.replace(/\D/g, '').slice(0, 6) }) : r));
+    const ph = i => i === 0 ? t('setup_ph1') : i === 1 ? t('setup_ph2') : t('setup_ph');
+    const submit = async e => {
+      e.preventDefault();
+      const list = rows.map(r => ({ name: r.name.trim(), pin: r.pin, pin2: r.pin2 }));
+      if (list.some(r => !r.name)) return setErr(t('e_setup_name'));
+      if (new Set(list.map(r => r.name.toLowerCase())).size !== list.length) return setErr(t('e_setup_dupe'));
+      if (list.some(r => !/^\d{4,6}$/.test(r.pin))) return setErr(t('e_setup_pin'));
+      if (list.some(r => r.pin !== r.pin2)) return setErr(t('e_setup_match'));
+      setErr(''); setBusy(true);
+      const res = await onDone(list.map(r => ({ name: r.name, pin: r.pin })));
+      if (res) { setBusy(false); setErr(t('pin_net')); }
+    };
+    return html`<form class="gate-card" onSubmit=${submit} noValidate>
+      <div class="gate-head"><h1>${t('setup_t')}</h1><p>${t('setup_p')}</p></div>
+      <div class="setup-list">
+        ${rows.map((r, i) => html`<div class="setup-row" key=${i}>
+          <div class="setup-row-head">
+            <b><${Avatar} p=${{ name: r.name || String(i + 1), color: ['#3A80C2', '#D64545', '#1F9A66', '#C98304', '#7A5AF8', '#D9468F'][i] }} size="sm" />${t('setup_person', { n: i + 1 })}</b>
+            ${rows.length > 1 ? html`<button type="button" class="link-btn" onClick=${() => setRows(rs => rs.filter((_, j) => j !== i))}>${t('setup_remove')}</button>` : null}
+          </div>
+          <div class="field"><label for=${'s-name-' + i}>${t('setup_name')}</label>
+            <input id=${'s-name-' + i} class="input" value=${r.name} maxLength="30" placeholder=${ph(i)} autoComplete="off" onInput=${e => set(i, 'name', e.target.value)} /></div>
+          <div class="two">
+            <div class="field"><label for=${'s-pin-' + i}>${t('setup_pin')}</label>
+              <input id=${'s-pin-' + i} class="input num" type="password" inputmode="numeric" autoComplete="new-password" maxLength="6" value=${r.pin} onInput=${e => set(i, 'pin', e.target.value)} /></div>
+            <div class="field"><label for=${'s-pin2-' + i}>${t('setup_pin2')}</label>
+              <input id=${'s-pin2-' + i} class="input num" type="password" inputmode="numeric" autoComplete="new-password" maxLength="6" value=${r.pin2} onInput=${e => set(i, 'pin2', e.target.value)} /></div>
+          </div>
+        </div>`)}
+      </div>
+      ${rows.length < 6 ? html`<button type="button" class="add-inline" onClick=${() => setRows(rs => rs.concat([blank()]))}>${t('setup_add')}</button>` : null}
+      ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+      <button type="submit" class="btn-primary" disabled=${busy} style=${{ padding: '13px 18px', fontSize: '16px' }}>${t('setup_go')}</button>
+    </form>`;
+  }
+
+  function Gate({ info, t, lang, setLang, theme, setTheme, onSetup, onLogin }) {
+    const profiles = info.profiles || [];
+    const [pick, setPick] = useState(() => profiles.length === 1 ? profiles[0] : null);
+    let bodyEl;
+    if (info.setupNeeded) bodyEl = html`<${SetupForm} t=${t} onDone=${onSetup} />`;
+    else if (pick) bodyEl = html`<${PinPad} key=${pick.id} profile=${pick} t=${t} onSubmit=${pin => onLogin(pick.id, pin)} onBack=${profiles.length > 1 ? () => setPick(null) : null} />`;
+    else bodyEl = html`<div class="gate-card">
+      <div class="gate-head"><h1>${t('gate_who')}</h1><p>${t('gate_sub')}</p></div>
+      <div class="who">${profiles.map(p => html`<button key=${p.id} onClick=${() => setPick(p)}><${Avatar} p=${p} /><span class="nm">${p.name}</span></button>`)}</div>
+    </div>`;
+    return html`<div class="gate">
+      <div class="gate-card" style=${{ gap: '28px' }}>
+        <div class="gate-top">
+          <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang Belanja</div></div>
+          <div class="mobile-tools"><${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+        </div>
+        ${bodyEl}
+      </div>
+    </div>`;
+  }
+
+  function ProfileSettings({ t, me, onRename, onChangePin, onAddProfile, onLock }) {
+    const [name, setName] = useState(me.name);
+    const [open, setOpen] = useState(null); // 'pin' | 'add'
+    const [f, setF] = useState({ a: '', b: '', c: '' });
+    const [err, setErr] = useState('');
+    const [busy, setBusy] = useState(false);
+    const digits = v => v.replace(/\D/g, '').slice(0, 6);
+    const toggle = k => { setOpen(o => o === k ? null : k); setF({ a: '', b: '', c: '' }); setErr(''); };
+    const run = async (fn) => { setBusy(true); const e = await fn(); setBusy(false); if (e) setErr(e); else { setOpen(null); setF({ a: '', b: '', c: '' }); setErr(''); } };
+    const submitPin = e => {
+      e.preventDefault();
+      if (!/^\d{4,6}$/.test(f.b)) return setErr(t('e_setup_pin'));
+      if (f.b !== f.c) return setErr(t('e_setup_match'));
+      run(() => onChangePin(f.a, f.b));
+    };
+    const submitAdd = e => {
+      e.preventDefault();
+      if (!f.a.trim()) return setErr(t('e_setup_name'));
+      if (!/^\d{4,6}$/.test(f.b)) return setErr(t('e_setup_pin'));
+      if (f.b !== f.c) return setErr(t('e_setup_match'));
+      run(() => onAddProfile(f.a.trim(), f.b));
+    };
+    const pinInput = (id, k, label) => html`<div class="field"><label for=${id}>${label}</label><input id=${id} class="input num" type="password" inputmode="numeric" autoComplete="new-password" maxLength="6" value=${f[k]} onInput=${e => setF(x => Object.assign({}, x, { [k]: digits(e.target.value) }))} /></div>`;
+    return html`<section class="card set-list">
+      <div class="set-row">
+        <div style=${{ display: 'flex', gap: '12px', alignItems: 'center' }}><${Avatar} p=${me} /><div><h3>${t('prof_t')}</h3><p>${t('prof_p', { n: me.name })}</p></div></div>
+        <button class="btn-ghost" onClick=${onLock} style=${{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>${Icon.lock}${t('lock_now')}</button>
+      </div>
+      <p>${t('lock_p')}</p>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('prof_name')}</h3></div>
+        <form class="inline-form" onSubmit=${e => { e.preventDefault(); if (name.trim() && name.trim() !== me.name) onRename(name.trim()); }}>
+          <input id="prof-name" class="input" value=${name} maxLength="30" onInput=${e => setName(e.target.value)} aria-label=${t('prof_name')} />
+          <button class="btn-primary" type="submit">${t('save')}</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('pin_change')}</h3></div>
+        <button class="btn-ghost" onClick=${() => toggle('pin')} aria-expanded=${open === 'pin'}>${open === 'pin' ? t('cancel') : t('pin_change')}</button>
+      </div>
+      ${open === 'pin' ? html`<form class="sub-form" onSubmit=${submitPin} noValidate>
+        ${pinInput('pin-cur', 'a', t('pin_cur'))}
+        <div class="two">${pinInput('pin-new', 'b', t('pin_new'))}${pinInput('pin-new2', 'c', t('pin_new2'))}</div>
+        ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+        <button class="btn-primary" type="submit" disabled=${busy}>${t('save')}</button>
+      </form>` : null}
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('prof_add')}</h3><p>${t('prof_add_p')}</p></div>
+        <button class="btn-ghost" onClick=${() => toggle('add')} aria-expanded=${open === 'add'}>${open === 'add' ? t('cancel') : t('prof_add')}</button>
+      </div>
+      ${open === 'add' ? html`<form class="sub-form" onSubmit=${submitAdd} noValidate>
+        <div class="field"><label for="add-name">${t('setup_name')}</label><input id="add-name" class="input" maxLength="30" value=${f.a} placeholder=${t('setup_ph')} onInput=${e => setF(x => Object.assign({}, x, { a: e.target.value }))} /></div>
+        <div class="two">${pinInput('add-pin', 'b', t('setup_pin'))}${pinInput('add-pin2', 'c', t('setup_pin2'))}</div>
+        ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+        <button class="btn-primary" type="submit" disabled=${busy}>${t('save')}</button>
+      </form>` : null}
+    </section>`;
+  }
+
   // ---------- app ----------
   const PAGES = ['home', 'expenses', 'reports', 'settings'];
   function App() {
@@ -893,6 +1165,8 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     const [theme, setThemeState] = useState(() => { try { const x = localStorage.getItem(THEME_KEY); if (x === 'light' || x === 'dark' || x === 'system') return x; } catch (e) {} return 'system'; });
     const [demo, setDemo] = useState(null);
     const [demoIncome, setDemoIncome] = useState(EXAMPLE_INCOME);
+    const [serverInfo, setServerInfo] = useState(null);
+    const [me, setMe] = useState(null);
     const r = useRef({ q: {} }).current;
     const t = useMemo(() => makeT(lang), [lang]);
     r.t = t;
@@ -920,7 +1194,21 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       };
       (async () => {
         const c = window.claude;
-        if (!c || !c.use) return useLocal();
+        if (!c || !c.use) {
+          let info = null;
+          try { info = await srv.call('GET', '/profiles'); } catch (e) {}
+          if (dead) return;
+          if (!info || !Array.isArray(info.profiles)) return useLocal();
+          setBackend('server'); setServerInfo(info);
+          const tok = srv.getToken();
+          if (tok) {
+            srv.token = tok;
+            try { const who = await srv.call('GET', '/me'); if (!dead) await r.openSession(who.profile); return; }
+            catch (e) { srv.setToken(null); }
+          }
+          setLoading(false);
+          return;
+        }
         let db = null, uid = null;
         try { const [d, u] = await Promise.all([c.use('db'), c.use('user')]); db = d; uid = u ? await u.id() : null; } catch (e) {}
         if (dead) return;
@@ -949,6 +1237,80 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ items, profile })); } catch (e) {}
     }, [items, profile, backend, loading]);
 
+    // ---- server mode: sessions and saving ----
+    r.openSession = async who => {
+      const d = await srv.call('GET', '/data');
+      const p = d.profile || {};
+      r.loaded = false;
+      setItems(Array.isArray(d.items) ? d.items : []); setProfile(p);
+      setDemo(null); setDemoIncome(EXAMPLE_INCOME); setPage('home'); setMonth(monthKey(new Date()));
+      if (p.lang === 'ms' || p.lang === 'en') setLangState(p.lang);
+      if (p.theme === 'light' || p.theme === 'dark' || p.theme === 'system') setThemeState(p.theme);
+      setMe(who); setLoading(false);
+      setTimeout(() => { r.loaded = true; }, 0);
+    };
+    r.flush = async keepalive => {
+      clearTimeout(r.saveT);
+      const d = r.dirty;
+      if (!d || !srv.token) return;
+      r.dirty = null;
+      try { await srv.call('PUT', '/data', d, keepalive); }
+      catch (e) {
+        if (e.status === 401) r.lock(true);
+        else { r.dirty = r.dirty || d; say(r.t('err_net')); }
+      }
+    };
+    r.lock = async expired => {
+      if (!expired) { await r.flush(); try { await srv.call('POST', '/logout'); } catch (e) {} }
+      r.loaded = false; r.dirty = null; clearTimeout(r.saveT);
+      srv.setToken(null);
+      setMe(null); setItems([]); setProfile({}); setDemo(null); setDemoIncome(EXAMPLE_INCOME); setSheet(null); setPage('home');
+      try { const info = await srv.call('GET', '/profiles'); setServerInfo(info); } catch (e) {}
+      say(r.t(expired ? 't_expired' : 't_locked'));
+    };
+    useEffect(() => {
+      if (backend !== 'server' || !me || !r.loaded) return;
+      r.dirty = { items, profile };
+      clearTimeout(r.saveT);
+      r.saveT = setTimeout(() => r.flush(), 600);
+    }, [items, profile]);
+    useEffect(() => {
+      if (backend !== 'server' || !me) return;
+      let timer;
+      const reset = () => { clearTimeout(timer); timer = setTimeout(() => r.lock(false), AUTO_LOCK_MS); };
+      const hide = () => { if (document.visibilityState === 'hidden') r.flush(true); };
+      const evs = ['pointerdown', 'keydown', 'scroll'];
+      evs.forEach(e => window.addEventListener(e, reset, { passive: true }));
+      document.addEventListener('visibilitychange', hide);
+      reset();
+      return () => { clearTimeout(timer); evs.forEach(e => window.removeEventListener(e, reset)); document.removeEventListener('visibilitychange', hide); };
+    }, [backend, me]);
+
+    const onSetup = async list => {
+      try { const res = await srv.call('POST', '/setup', { profiles: list }); setServerInfo({ setupNeeded: false, profiles: res.profiles }); return null; }
+      catch (e) { if (e.status === 409) { try { setServerInfo(await srv.call('GET', '/profiles')); } catch (x) {} return null; } return e.data || { error: 'net' }; }
+    };
+    const onLogin = async (pid, pin) => {
+      try {
+        const d = await srv.call('POST', '/login', { profileId: pid, pin });
+        srv.setToken(d.token);
+        await r.openSession(d.profile);
+        return null;
+      } catch (e) { return e.data && e.data.error ? e.data : { error: 'net' }; }
+    };
+    const onRename = async n => {
+      try { const d = await srv.call('PATCH', '/me', { name: n }); setMe(d.profile); say(r.t('t_renamed')); }
+      catch (e) { if (e.status === 401) r.lock(true); else say(r.t('err_net')); }
+    };
+    const onChangePin = async (cur, next) => {
+      try { const d = await srv.call('POST', '/me/pin', { current: cur, next }); setMe(d.profile); say(r.t('t_pin_changed')); return null; }
+      catch (e) { if (e.status === 401) { r.lock(true); return null; } return e.status === 403 ? r.t('e_pin_cur') : r.t('pin_net'); }
+    };
+    const onAddProfile = async (n, pin) => {
+      try { await srv.call('POST', '/profiles', { name: n, pin }); say(r.t('t_prof_added', { n })); return null; }
+      catch (e) { if (e.status === 401) { r.lock(true); return null; } return e.status === 409 ? r.t('e_too_many') : r.t('pin_net'); }
+    };
+
     const api = useMemo(() => {
       const queue = (key, fn) => { const p = (r.q[key] || Promise.resolve()).then(fn, fn); r.q[key] = p.catch(() => {}); return p; };
       const guard = p => Promise.resolve(p).catch(e => { say(r.t(errKey(e))); throw e; });
@@ -968,8 +1330,8 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     }, [backend]);
 
     const sym = profile.currency || 'RM';
-    const exampleMode = !loading && items.length === 0 && !profile.started;
-    useEffect(() => { if (exampleMode && !demo) setDemo(exampleItems(monthKey(today))); if (!exampleMode && demo) setDemo(null); }, [exampleMode]);
+    const exampleMode = !loading && items.length === 0 && !profile.started && !(backend === 'server' && !me);
+    useEffect(() => { if (exampleMode && !demo) setDemo(exampleItems(monthKey(today))); if (!exampleMode && demo) setDemo(null); }, [exampleMode, demo]);
     const source = exampleMode ? (demo || []) : items;
     const view = source.filter(i => i.month === month);
     const income = exampleMode ? demoIncome : incomeFor(profile, month);
@@ -1046,20 +1408,27 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     else if (page === 'home') body = html`<${HomePage} ctx=${ctx} v=${v} go=${go} openAdd=${openAdd} onApplyPlan=${onApplyPlan} />`;
     else if (page === 'expenses') body = html`<${ExpensesPage} ctx=${ctx} v=${v} tab=${tab} setTab=${setTab} openAdd=${openAdd} />`;
     else if (page === 'reports') body = html`<${ReportsPage} ctx=${ctx} v=${v} allItems=${source} profile=${profile} exampleMode=${exampleMode} />`;
-    if (page === 'settings') body = html`<${SettingsPage} ctx=${ctx} v=${v} profile=${profile} setLang=${setLang} theme=${theme} setTheme=${setTheme} onCurrency=${onCurrency} onIncome=${onIncome} carry=${carry} onCarry=${onCarry} onClear=${onClear} backend=${backend} loading=${loading} exampleMode=${exampleMode} />`;
+    if (page === 'settings') body = html`<${React.Fragment}>${me ? html`<${ProfileSettings} key=${me.id + me.name} t=${t} me=${me} onRename=${onRename} onChangePin=${onChangePin} onAddProfile=${onAddProfile} onLock=${() => r.lock(false)} />` : null}<${SettingsPage} ctx=${ctx} v=${v} profile=${profile} meName=${me ? me.name : ''} setLang=${setLang} theme=${theme} setTheme=${setTheme} onCurrency=${onCurrency} onIncome=${onIncome} carry=${carry} onCarry=${onCarry} onClear=${onClear} backend=${backend} loading=${loading} exampleMode=${exampleMode} /><//>`;
+
+    if (backend === 'server' && !me && serverInfo && !loading) {
+      return html`<${React.Fragment}>
+        <${Gate} key=${(serverInfo.profiles || []).map(p => p.id).join(',') + String(serverInfo.setupNeeded)} info=${serverInfo} t=${t} lang=${lang} setLang=${setLang} theme=${theme} setTheme=${setTheme} onSetup=${onSetup} onLogin=${onLogin} />
+        ${toast ? html`<div class="toast" role="status" style=${{ bottom: '24px' }}>${toast}</div>` : null}
+      <//>`;
+    }
 
     return html`<div class="shell">
       <nav class="side" aria-label="Menu">
-        <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Paycheck<br/>Planner</div></div>
+        <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang<br/>Belanja</div></div>
         ${NAV.map(([id, label, ic]) => html`<button key=${id} class="side-link" aria-current=${page === id ? 'page' : undefined} onClick=${() => go(id)}>${ic}${label}</button>`)}
         <button class="btn-primary side-add" onClick=${() => openAdd()} disabled=${loading}>${Icon.plus}${t('add_expense')}</button>
-        <div class="side-foot"><${ThemeSwitch} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+        <div class="side-foot">${me ? html`<div class="user-chip"><${Avatar} p=${me} size="sm" /><b>${me.name}</b><button class="lock-btn" onClick=${() => r.lock(false)} title=${t('lock_now')}>${Icon.lock}${t('lock')}</button></div>` : null}<${ThemeSwitch} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
       </nav>
 
       <main class="content">
         <div class="mobile-brand">
-          <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Paycheck Planner</div></div>
-          <div class="mobile-tools"><${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+          <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang Belanja</div></div>
+          <div class="mobile-tools">${me ? html`<button class="me-btn" onClick=${() => r.lock(false)} aria-label=${t('lock_now') + ' (' + me.name + ')'} title=${t('lock_now')}><${Avatar} p=${me} size="sm" /></button>` : null}<${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
         </div>
         <header class="page-head">
           <div><h1 class="page-title">${titles[page][0]}</h1><p class="page-sub">${titles[page][1]}</p></div>
