@@ -9,5 +9,33 @@ services:
       - rancang_data:/data
     restart: unless-stopped
 
+  # Free public HTTPS address through Cloudflare, no account or domain needed.
+  # The address (https://<random-words>.trycloudflare.com) changes whenever this container restarts.
+  #   Start:        docker compose --profile tunnel up -d
+  #   Show address: docker compose logs tunnel | findstr trycloudflare   (Windows)
+  #                 docker compose logs tunnel | grep trycloudflare      (macOS/Linux)
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: rancang-belanja-tunnel
+    command: tunnel --no-autoupdate --url http://web:3000
+    depends_on:
+      - web
+    restart: unless-stopped
+    profiles: ["tunnel"]
+
+  # Permanent address on your own domain (needs a free Cloudflare account + a domain on Cloudflare).
+  # Put TUNNEL_TOKEN=... in a .env file next to this file, then:
+  #   docker compose --profile tunnel-named up -d
+  tunnel-named:
+    image: cloudflare/cloudflared:latest
+    container_name: rancang-belanja-tunnel-named
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN:-}
+    depends_on:
+      - web
+    restart: unless-stopped
+    profiles: ["tunnel-named"]
+
 volumes:
   rancang_data:

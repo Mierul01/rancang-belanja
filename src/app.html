@@ -378,7 +378,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       setup_t: 'Sediakan profil', setup_p: 'Buat satu profil untuk setiap orang. Setiap profil ada PIN sendiri dan hanya boleh melihat datanya sendiri.',
       setup_person: 'Orang {n}', setup_name: 'Nama', setup_ph1: 'cth. Saya', setup_ph2: 'cth. Mak', setup_ph: 'cth. Ayah',
       setup_pin: 'PIN (4 hingga 6 nombor)', setup_pin2: 'Ulang PIN', setup_add: '+ Tambah orang', setup_remove: 'Buang', setup_go: 'Simpan dan mula',
-      e_setup_name: 'Setiap profil perlukan nama.', e_setup_pin: 'PIN mestilah 4 hingga 6 nombor.', e_setup_match: 'PIN ulangan tidak sama.', e_setup_dupe: 'Setiap profil perlu nama yang berbeza.',
+      e_setup_name: 'Setiap profil perlukan nama.', e_setup_pin: 'PIN mestilah 4 hingga 6 nombor.', e_setup_match: 'PIN ulangan tidak sama.', e_setup_dupe: 'Setiap profil perlu nama yang berbeza.', e_setup_local: 'Profil pertama mesti dibuat di rangkaian rumah, iaitu di http://localhost:8088 pada komputer yang menjalankan aplikasi.',
       lock: 'Kunci', prof_t: 'Profil & keselamatan', prof_p: 'Anda sedang menggunakan profil {n}.',
       prof_name: 'Nama profil', pin_change: 'Tukar PIN', pin_cur: 'PIN semasa', pin_new: 'PIN baharu', pin_new2: 'Ulang PIN baharu',
       prof_add: 'Tambah profil baharu', prof_add_p: 'Untuk ahli keluarga lain, maksimum 6 profil.', lock_now: 'Kunci sekarang', lock_p: 'Aplikasi juga dikunci sendiri selepas 15 minit tidak digunakan.',
@@ -443,7 +443,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       setup_t: 'Set up profiles', setup_p: 'Create one profile for each person. Every profile has its own PIN and only sees its own data.',
       setup_person: 'Person {n}', setup_name: 'Name', setup_ph1: 'e.g. Me', setup_ph2: 'e.g. Mom', setup_ph: 'e.g. Dad',
       setup_pin: 'PIN (4 to 6 digits)', setup_pin2: 'Repeat PIN', setup_add: '+ Add person', setup_remove: 'Remove', setup_go: 'Save and start',
-      e_setup_name: 'Every profile needs a name.', e_setup_pin: 'PIN must be 4 to 6 digits.', e_setup_match: 'The repeated PIN does not match.', e_setup_dupe: 'Each profile needs a different name.',
+      e_setup_name: 'Every profile needs a name.', e_setup_pin: 'PIN must be 4 to 6 digits.', e_setup_match: 'The repeated PIN does not match.', e_setup_dupe: 'Each profile needs a different name.', e_setup_local: 'The first profiles must be created on the home network, at http://localhost:8088 on the computer running the app.',
       lock: 'Lock', prof_t: 'Profile & security', prof_p: 'You are using the profile {n}.',
       prof_name: 'Profile name', pin_change: 'Change PIN', pin_cur: 'Current PIN', pin_new: 'New PIN', pin_new2: 'Repeat new PIN',
       prof_add: 'Add a new profile', prof_add_p: 'For another family member, up to 6 profiles.', lock_now: 'Lock now', lock_p: 'The app also locks itself after 15 minutes without use.',
@@ -1033,7 +1033,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       if (list.some(r => r.pin !== r.pin2)) return setErr(t('e_setup_match'));
       setErr(''); setBusy(true);
       const res = await onDone(list.map(r => ({ name: r.name, pin: r.pin })));
-      if (res) { setBusy(false); setErr(t('pin_net')); }
+      if (res) { setBusy(false); setErr(res.error === 'setup_local_only' ? t('e_setup_local') : t('pin_net')); }
     };
     return html`<form class="gate-card" onSubmit=${submit} noValidate>
       <div class="gate-head"><h1>${t('setup_t')}</h1><p>${t('setup_p')}</p></div>

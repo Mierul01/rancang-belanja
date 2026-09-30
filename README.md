@@ -28,6 +28,7 @@
 - [How the calculations work](#how-the-calculations-work)
 - [Getting started](#getting-started)
 - [Install on your phone](#install-on-your-phone)
+- [Share outside your home (Cloudflare Tunnel)](#share-outside-your-home-cloudflare-tunnel)
 - [Where your data is stored](#where-your-data-is-stored)
 - [Backup and restore](#backup-and-restore)
 - [Security notes](#security-notes)
@@ -276,6 +277,63 @@ It then opens full-screen with its own icon, like a normal app. Do this on each 
 
 ---
 
+## Share outside your home (Cloudflare Tunnel)
+
+To use the app away from home Wi-Fi (e.g. your mom on mobile data), a **Cloudflare Tunnel** gives it a public `https://` address. You don't need to open router ports. The data still stays on your PC, and **your PC must be on** with Docker running.
+
+> **Do the first-time setup at home first.** Creating the first profiles is blocked through the tunnel, so strangers can't set up the app before you. Open `http://localhost:8088` on the PC and create everyone's profile there.
+
+### Option A: Quick tunnel (free, no account, no domain)
+
+```bash
+docker compose --profile tunnel up -d
+```
+
+Find the address:
+
+```bash
+# Windows
+docker compose logs tunnel | findstr trycloudflare
+# macOS / Linux
+docker compose logs tunnel | grep trycloudflare
+```
+
+It looks like `https://some-random-words.trycloudflare.com`. Send it to your mom. She opens it, adds it to her home screen, taps her name and enters her PIN.
+
+⚠️ **The address changes whenever the tunnel restarts**, e.g. after the PC reboots or Docker restarts. Run the command above again and send her the new one. Cloudflare provides quick tunnels for testing, with no uptime guarantee.
+
+To stop sharing:
+
+```bash
+docker compose --profile tunnel stop tunnel
+```
+
+### Option B: Permanent address on your own domain
+
+A permanent address such as `https://belanja.yourdomain.com` needs a free Cloudflare account and **a domain** managed by Cloudflare (a domain costs roughly RM 40–60 a year).
+
+1. In the Cloudflare dashboard, go to **Zero Trust → Networks → Tunnels → Create a tunnel**, choose **Cloudflared**, and name it `rancang-belanja`.
+2. Copy the **token** (the long string after `--token`) into a file named `.env` next to `docker-compose.yml`:
+   ```
+   TUNNEL_TOKEN=eyJhIjoi...
+   ```
+3. Under **Public hostname**, add e.g. `belanja.yourdomain.com` → service `HTTP` → URL `web:3000`.
+4. Start it:
+   ```bash
+   docker compose --profile tunnel-named up -d
+   ```
+5. Recommended: in **Zero Trust → Access → Applications**, protect that hostname with a **one-time email code** allowed only for your and your mom's emails. Strangers then can't even reach the PIN screen.
+
+`.env` is in `.gitignore`, so the token is never pushed to GitHub.
+
+### Safety when the app is public
+
+- Change to **6-digit PINs** in **Tetapan → Tukar PIN**.
+- All tunnel traffic arrives from the same place (the tunnel), so the wrong-PIN limit applies to each profile as a whole. After 5 wrong tries from anywhere, that profile waits 5 minutes. This stops PIN guessing, but someone who knows the address could also make your mom wait 5 minutes.
+- Only share the address with family.
+
+---
+
 ## Where your data is stored
 
 The app picks its storage automatically, depending on how it's opened:
@@ -334,7 +392,8 @@ This app is built for a **home network**, to keep family members' data separate 
 Things to know:
 
 - A 4–6 digit PIN keeps family members out of each other's data. It is **not** strong protection against a determined attacker.
-- The connection is plain **HTTP** on your Wi-Fi, so it isn't encrypted. Don't forward port 8088 on your router to the internet. If you need access from outside the home, use a VPN such as Tailscale, or put it behind HTTPS.
+- On your Wi-Fi the connection is plain **HTTP**, so it isn't encrypted. Don't forward port 8088 on your router. To use the app outside the home, use the [Cloudflare Tunnel](#share-outside-your-home-cloudflare-tunnel), which adds HTTPS.
+- First-time setup is refused when the request comes through the tunnel.
 - Anyone with access to the computer running Docker can read `db.json` (except the PINs, which are hashed).
 
 ---
