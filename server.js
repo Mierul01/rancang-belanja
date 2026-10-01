@@ -111,8 +111,8 @@ async function api(req, res, url) {
 
   if (route === 'POST /api/setup') {
     if (db.profiles.length) return send(res, 409, { error: 'already_setup' });
-    // First-time setup only from the home network, never through the internet tunnel.
-    if (req.headers['cf-connecting-ip']) return send(res, 403, { error: 'setup_local_only' });
+    // First-time setup only from the home network, never through an internet tunnel or proxy.
+    if (req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']) return send(res, 403, { error: 'setup_local_only' });
     const body = await readBody(req);
     const list = Array.isArray(body.profiles) ? body.profiles : [];
     if (!list.length || list.length > MAX_PROFILES) return send(res, 400, { error: 'bad_profiles' });

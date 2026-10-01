@@ -28,7 +28,7 @@
 - [How the calculations work](#how-the-calculations-work)
 - [Getting started](#getting-started)
 - [Install on your phone](#install-on-your-phone)
-- [Share outside your home (Cloudflare Tunnel)](#share-outside-your-home-cloudflare-tunnel)
+- [Share outside your home](#share-outside-your-home)
 - [Where your data is stored](#where-your-data-is-stored)
 - [Backup and restore](#backup-and-restore)
 - [Security notes](#security-notes)
@@ -277,9 +277,27 @@ It then opens full-screen with its own icon, like a normal app. Do this on each 
 
 ---
 
-## Share outside your home (Cloudflare Tunnel)
+## Share outside your home
 
-To use the app away from home Wi-Fi (e.g. your mom on mobile data), a **Cloudflare Tunnel** gives it a public `https://` address. You don't need to open router ports. The data still stays on your PC, and **your PC must be on** with Docker running.
+### Recommended: Tailscale Funnel (free, fixed address)
+
+Tailscale Funnel gives the app a **permanent** public HTTPS address such as `https://your-pc.tailxxxx.ts.net`. It does not change when the PC restarts. You need a free Tailscale account, and the PC must be on.
+
+1. Install Tailscale on the PC (`winget install Tailscale.Tailscale`) and sign in.
+2. Approve Funnel for your account when Tailscale asks (a one-time click).
+3. Run:
+   ```bash
+   tailscale funnel --bg 8088
+   ```
+4. `tailscale funnel status` shows your address. Funnel keeps running in the background and comes back after a reboot.
+
+To stop sharing: `tailscale funnel --https=443 off`.
+
+Also turn on **Start Docker Desktop when you sign in** and switch off PC sleep, so the app is available after a restart.
+
+### Alternative: Cloudflare Tunnel
+
+To use the app away from home Wi-Fi (e.g. your mom on mobile data), a **Cloudflare Tunnel** also gives it a public `https://` address. You don't need to open router ports. The data still stays on your PC, and **your PC must be on** with Docker running.
 
 > **Do the first-time setup at home first.** Creating the first profiles is blocked through the tunnel, so strangers can't set up the app before you. Open `http://localhost:8088` on the PC and create everyone's profile there.
 
@@ -392,7 +410,7 @@ This app is built for a **home network**, to keep family members' data separate 
 Things to know:
 
 - A 4–6 digit PIN keeps family members out of each other's data. It is **not** strong protection against a determined attacker.
-- On your Wi-Fi the connection is plain **HTTP**, so it isn't encrypted. Don't forward port 8088 on your router. To use the app outside the home, use the [Cloudflare Tunnel](#share-outside-your-home-cloudflare-tunnel), which adds HTTPS.
+- On your Wi-Fi the connection is plain **HTTP**, so it isn't encrypted. Don't forward port 8088 on your router. To use the app outside the home, use [Tailscale Funnel or Cloudflare Tunnel](#share-outside-your-home), which add HTTPS.
 - First-time setup is refused when the request comes through the tunnel.
 - Anyone with access to the computer running Docker can read `db.json` (except the PINs, which are hashed).
 
