@@ -446,6 +446,44 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 @keyframes rise { from { transform: translateY(16px); opacity: .6; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 @media (max-width: 420px) { .month-label { min-width: 0; padding: 0 6px; gap: 6px; } .mn-cal { display: none; } .mn-text b { font-size: 13.5px; } .hero { padding: 18px; } .page-title { font-size: 22px; } .page-sub { font-size: 12.5px; } }
+/* ---------- depth and motion (all switched off by prefers-reduced-motion above) ---------- */
+:root { --lift: 0 1px 2px rgba(16,40,28,.06), 0 14px 30px -18px rgba(16,40,28,.38); --lift-hi: 0 2px 4px rgba(16,40,28,.08), 0 22px 40px -20px rgba(16,40,28,.5); }
+:root[data-theme="dark"] { --lift: 0 1px 2px rgba(0,0,0,.4), 0 14px 30px -18px rgba(0,0,0,.8); --lift-hi: 0 2px 4px rgba(0,0,0,.5), 0 22px 40px -18px rgba(0,0,0,.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lift: 0 1px 2px rgba(0,0,0,.4), 0 14px 30px -18px rgba(0,0,0,.8); --lift-hi: 0 2px 4px rgba(0,0,0,.5), 0 22px 40px -18px rgba(0,0,0,.9); } }
+.card, .quick, .tabs, .month-nav, .who-row, .gate-panel { box-shadow: var(--lift); }
+.alert { box-shadow: var(--lift); transition: transform .2s ease, box-shadow .2s ease; }
+.alert:hover { transform: translateY(-2px); box-shadow: var(--lift-hi); }
+.quick button span.q { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 14px -10px var(--qc); }
+.quick button:hover span.q { transform: translateY(-3px); }
+
+.wallet > * { position: relative; z-index: 1; }
+.wallet { box-shadow: 0 2px 4px rgba(8,36,22,.2), 0 26px 44px -22px rgba(8,36,22,.85), inset 0 1px 0 rgba(255,255,255,.08); }
+.wallet::after { content: ""; position: absolute; top: -50%; bottom: -50%; left: -60%; width: 38%; z-index: 0; pointer-events: none; transform: rotate(18deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.13), transparent); animation: sheen 6.5s ease-in-out 1.2s infinite; }
+@keyframes sheen { 0% { left: -60%; } 45%, 100% { left: 140%; } }
+.w-mark { background: linear-gradient(110deg, #D9A13A 0%, #F7D27A 35%, #FFF1C4 50%, #F7D27A 65%, #D9A13A 100%); background-size: 250% 100%; animation: gold 4s linear infinite; box-shadow: 0 4px 10px -4px rgba(217,161,58,.7); }
+@keyframes gold { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+.tile { transition: transform .2s ease, box-shadow .2s ease; }
+.tile::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(160deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,0) 42%); }
+.tile.must { box-shadow: 0 16px 28px -16px rgba(194,58,58,.75), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile.defer { box-shadow: 0 16px 28px -16px rgba(44,104,168,.75), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile:hover { transform: translateY(-3px); }
+
+.alloc span, .tile-bar span, .progress span, .cat-bar span { transform-origin: left center; animation: grow 1s cubic-bezier(.2,.8,.2,1) .2s backwards; }
+@keyframes grow { from { transform: scaleX(0); } }
+
+.page-in > *, .hx-wrap > *, .hx-side > * { animation: rise-in .55s cubic-bezier(.2,.8,.2,1) backwards; }
+.page-in > :nth-child(2), .hx-side > :nth-child(1) { animation-delay: .06s; }
+.page-in > :nth-child(3), .hx-side > :nth-child(2) { animation-delay: .12s; }
+.page-in > :nth-child(4) { animation-delay: .18s; }
+.page-in > :nth-child(n+5) { animation-delay: .24s; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px); } }
+
+.bottom-nav .nav-add .ic { position: relative; }
+.bottom-nav .nav-add .ic::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none; animation: pulse 2.6s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(45,187,116,.5); } 70%, 100% { box-shadow: 0 0 0 14px rgba(45,187,116,0); } }
+.badge.late { animation: alarm 2s ease-in-out infinite; }
+@keyframes alarm { 0%, 100% { box-shadow: 0 0 0 0 rgba(229,72,77,.55); } 50% { box-shadow: 0 0 0 5px rgba(229,72,77,0); } }
 </style>
 
 <div id="root">
@@ -822,6 +860,27 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
   }
   const QUICK_C = { q_must: 'var(--must)', q_defer: 'var(--defer)', q_inc: 'var(--ok)', q_copy: 'var(--warn)', q_rep: '#8B6CF6' };
 
+  // Animates a number from its previous value to the new one (skipped when the device asks for less motion).
+  const LESS_MOTION = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } })();
+  function CountUp({ value, render }) {
+    const [n, setN] = useState(LESS_MOTION ? value : 0);
+    const from = useRef(0);
+    useEffect(() => {
+      if (LESS_MOTION) { setN(value); return; }
+      const a = from.current, t0 = performance.now();
+      let raf;
+      const step = now => {
+        const p = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - p, 3);
+        setN(p < 1 ? Math.round(a + (value - a) * e) : value);
+        if (p < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+      return () => { cancelAnimationFrame(raf); from.current = value; };
+    }, [value]);
+    useEffect(() => { from.current = n; });
+    return render(n);
+  }
+
   // Wallet card (balance + how income is split), status alert and quick actions at the top of Home.
   function HomeTop({ ctx, v, go, openAdd, carry, onCarry }) {
     const { sym, t, lang, month, today, readOnly } = ctx;
@@ -841,7 +900,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     return html`<div class="hx-wrap">
       <section class="wallet" aria-label=${t('left_after')}>
         <div class="w-head"><span class="w-lbl">${t('left_after')}</span><span class="w-mark" aria-hidden="true"><i></i></span></div>
-        <div class=${'w-amt' + (afterMust < 0 ? ' neg' : '')}>${money(sym, afterMust, true)}</div>
+        <div class=${'w-amt' + (afterMust < 0 ? ' neg' : '')}><${CountUp} value=${afterMust} render=${n => money(sym, n, true)} /></div>
         <div class="w-sub">${v.income ? t('hx_of', { a: money(sym, v.income, true) }) : t('st_none_t')}</div>
         <div class="alloc" aria-hidden="true">
           <span style=${{ width: w(v.mustPaid), background: '#FF7A6B' }}></span>
@@ -886,7 +945,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       <div class="tiles">${tiles.map(([k, ic, tot, n, p]) => html`<button key=${k} class=${'tile ' + k} onClick=${() => go('expenses', k)}>
         <span class="tile-ic">${ic}</span>
         <span class="tile-lbl">${t(k)}</span>
-        <span class="tile-amt">${money(sym, tot, true)}</span>
+        <span class="tile-amt"><${CountUp} value=${tot} render=${n => money(sym, n, true)} /></span>
         <span class="tile-sub">${t('tile_sub', { n, p })}</span>
         <span class="tile-bar" aria-hidden="true"><span style=${{ width: p + '%' }}></span></span>
       </button>`)}</div>
