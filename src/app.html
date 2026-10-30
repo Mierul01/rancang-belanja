@@ -5,19 +5,21 @@
 <style>
 /* Layout: app shell. Phone = bottom tab bar + floating add button; desktop = left sidebar menu. Home is one ink summary card, three plain figures, one status card, one "to pay" list. */
 :root {
-  --bg: #F2F4F8;
+  --bg: #F3F6F4;
   --surface: #FFFFFF;
-  --surface-2: #F5F7FA;
-  --line: #E1E5EC;
-  --fg: #121A2C;
-  --muted: #5C6679;
-  --ink: #16203D;
-  --ink-2: #26325B;
-  --ink-3: #2F3F73;
-  --ink-fg: #F1F3F9;
-  --ink-muted: #AEB7CF;
-  --accent: #F2B544;
-  --accent-fg: #1B1405;
+  --surface-2: #F3F7F4;
+  --line: #E0E7E2;
+  --fg: #12201A;
+  --muted: #5A6B62;
+  --ink: #146B44;
+  --ink-2: #1A8053;
+  --ink-3: #26A066;
+  --ink-fg: #FFFFFF;
+  --ink-muted: #CFEBDB;
+  --accent: #178A52;
+  --accent-fg: #FFFFFF;
+  --nav: #111A15;
+  --nav-fg: #8EA497;
   --must: #D64545;
   --defer: #3A80C2;
   --ok: #1F9A66;
@@ -28,18 +30,20 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0A0E18; --surface: #121827; --surface-2: #1A2135; --line: #252E47;
-    --fg: #E8EBF3; --muted: #9AA3B8; --ink: #1C2850; --ink-2: #2B3969; --ink-3: #1A2B66;
-    --ink-fg: #F1F3F9; --ink-muted: #AEB7CF; --accent: #F5BE55; --accent-fg: #1B1405;
+    --bg: #0B110E; --surface: #131B17; --surface-2: #1A241F; --line: #27342D;
+    --fg: #E6EEE9; --muted: #9BADA3; --ink: #0E4A30; --ink-2: #135C3B; --ink-3: #1B774B;
+    --ink-fg: #FFFFFF; --ink-muted: #BFDCCB; --accent: #3CC484; --accent-fg: #052014;
+    --nav: #18221D; --nav-fg: #93A79B;
     --must: #EE6868; --defer: #5EA3E2; --ok: #38C184; --warn: #EDA82B;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0A0E18; --surface: #121827; --surface-2: #1A2135; --line: #252E47;
-  --fg: #E8EBF3; --muted: #9AA3B8; --ink: #1C2850; --ink-2: #2B3969; --ink-3: #1A2B66;
-  --ink-fg: #F1F3F9; --ink-muted: #AEB7CF; --accent: #F5BE55; --accent-fg: #1B1405;
+  --bg: #0B110E; --surface: #131B17; --surface-2: #1A241F; --line: #27342D;
+  --fg: #E6EEE9; --muted: #9BADA3; --ink: #0E4A30; --ink-2: #135C3B; --ink-3: #1B774B;
+  --ink-fg: #FFFFFF; --ink-muted: #BFDCCB; --accent: #3CC484; --accent-fg: #052014;
+  --nav: #18221D; --nav-fg: #93A79B;
   --must: #EE6868; --defer: #5EA3E2; --ok: #38C184; --warn: #EDA82B;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
   color-scheme: dark;
@@ -56,12 +60,23 @@ button:disabled { cursor: default; }
 
 /* ---------- shell ---------- */
 .side { display: none; }
-.content { width: 100%; max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 10px 150px; display: grid; gap: 16px; align-content: start; }
+.content { width: 100%; min-width: 0; }
+.top { position: relative; overflow: hidden; color: var(--ink-fg); padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 40px; background: radial-gradient(420px 260px at 105% -10%, rgba(255,255,255,.16), transparent 70%), radial-gradient(360px 240px at -20% 110%, rgba(0,0,0,.18), transparent 70%), linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 55%, var(--ink-3) 100%); }
+.top::before, .top::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; border: 26px solid rgba(255,255,255,.05); }
+.top::before { width: 260px; height: 260px; right: -90px; top: -110px; }
+.top::after { width: 180px; height: 180px; left: -70px; bottom: -60px; border-width: 20px; }
+.top-in { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; display: grid; gap: 14px; }
+.page { position: relative; z-index: 2; margin-top: -24px; background: var(--bg); border-radius: 26px 26px 0 0; padding: 22px 16px 120px; }
+.page::before { content: ""; position: absolute; top: 9px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 4px; background: var(--line); }
+.page-in { max-width: 1120px; margin: 0 auto; display: grid; gap: 14px; align-content: start; }
 @media (min-width: 900px) {
   .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
   .side { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; height: 100dvh; padding: 22px 14px; background: var(--surface); border-right: 1px solid var(--line); }
-  .content { padding-inline: 32px; padding-block: 26px 48px; }
-  .bottom-nav, .fab { display: none !important; }
+  .top { margin: 22px 28px 0; border-radius: 26px; padding: 22px 24px 24px; }
+  .page { margin-top: 0; background: transparent; border-radius: 0; padding: 18px 28px 40px; }
+  .page::before { display: none; }
+  .top-bar { display: none !important; }
+  .bottom-nav { display: none !important; }
 }
 .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
 .brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--ink); display: grid; place-items: center; flex: none; }
@@ -72,45 +87,57 @@ button:disabled { cursor: default; }
 .side-add { margin-top: 14px; justify-content: center; }
 .side-foot { margin-top: auto; display: grid; gap: 10px; padding: 0 6px; }
 
-.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
-.bottom-nav button { border: 0; background: transparent; display: grid; justify-items: center; gap: 3px; padding: 4px 0; font-size: 11.5px; font-weight: 600; color: var(--muted); }
-.bottom-nav .ic { width: 48px; height: 28px; border-radius: 999px; display: grid; place-items: center; transition: background .15s; }
-.bottom-nav button[aria-current="page"] { color: var(--fg); }
-.bottom-nav button[aria-current="page"] .ic { background: color-mix(in srgb, var(--accent) 35%, transparent); }
-.fab { position: fixed; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 31; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; border-radius: 999px; padding: 13px 18px; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 10px 28px -8px rgba(0,0,0,.45); }
+.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--nav); border-radius: 22px 22px 0 0; display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -8px 24px -12px rgba(0,0,0,.35); }
+.bottom-nav button { border: 0; background: transparent; display: grid; justify-items: center; gap: 3px; padding: 4px 0; font-size: 11px; font-weight: 600; color: var(--nav-fg); min-width: 0; }
+.bottom-nav .ic { width: 44px; height: 28px; border-radius: 999px; display: grid; place-items: center; transition: background .15s, color .15s; }
+.bottom-nav button[aria-current="page"] { color: #fff; }
+.bottom-nav button[aria-current="page"] .ic { color: #4FD592; background: rgba(79,213,146,.14); }
+.bottom-nav .nav-add .ic { width: 56px; height: 56px; margin-top: -30px; border-radius: 50%; color: #fff; background: linear-gradient(150deg, #1E9E5E, #2DBB74); border: 5px solid var(--bg); box-shadow: 0 10px 20px -8px rgba(23,138,82,.7); }
+.bottom-nav .nav-add:active .ic { transform: scale(.94); }
 
 /* ---------- page header ---------- */
-.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.head-text { min-width: 0; flex: 1 1 auto; padding-top: 2px; }
-.page-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -.015em; }
-.page-sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.glass { background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-radius: 20px; color: var(--ink-fg); }
+.top-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.top-bar .brand { padding: 0; }
+.top-bar .brand-mark { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.22); }
+.top-bar .brand { gap: 8px; min-width: 0; }
+.top-bar .brand-mark { width: 32px; height: 32px; }
+.top-bar .brand-name { font-size: 15px; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-tools { display: flex; gap: 6px; align-items: center; flex: none; }
+.top .theme-cycle { width: 34px; height: 34px; }
+.top .lang button { padding: 5px 9px; }
+.top .theme-cycle, .top .me-btn { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.24); color: #fff; }
+.top .lang { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.24); }
+.top .lang button { color: rgba(255,255,255,.8); }
+.top .lang button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.head-text { min-width: 0; flex: 1 1 auto; display: grid; gap: 1px; }
+.hello { font-size: 13.5px; color: var(--ink-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 25px; line-height: 1.12; letter-spacing: -.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-sub { margin: 0; color: var(--ink-muted); font-size: 13px; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .head-tools { display: grid; justify-items: end; gap: 4px; flex: none; }
-.today-link { border: 0; background: none; padding: 2px 4px; color: var(--defer); font-weight: 600; font-size: 12.5px; }
-.month-nav { display: flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 4px; box-shadow: 0 1px 2px rgba(20,27,45,.05); }
-.mn-arrow { border: 0; background: var(--surface-2); width: 32px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex: none; }
-.mn-arrow:hover { background: color-mix(in srgb, var(--accent) 22%, var(--surface-2)); color: var(--fg); }
-.month-label { display: flex; align-items: center; gap: 8px; padding: 0 10px; min-width: 124px; }
-.mn-cal { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--fg); flex: none; }
+.today-link { border: 0; background: none; padding: 2px 4px; color: #fff; font-weight: 600; font-size: 12px; opacity: .9; }
+.month-nav { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.22); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-radius: 16px; padding: 4px; color: #fff; }
+.mn-arrow { border: 0; background: rgba(255,255,255,.12); width: 30px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; flex: none; }
+.mn-arrow:hover { background: rgba(255,255,255,.24); }
+.month-label { display: flex; align-items: center; gap: 8px; padding: 0 8px; min-width: 108px; }
+.mn-cal { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: rgba(255,255,255,.16); color: #fff; flex: none; }
 .mn-text { display: grid; line-height: 1.1; }
-.mn-text b { font-size: 14.5px; font-weight: 700; white-space: nowrap; }
-.mn-text small { font-size: 11.5px; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.mn-text b { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.mn-text small { font-size: 11px; color: var(--ink-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
 .lang { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .lang button { border: 0; background: transparent; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
 .lang button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
 .lang.icons button { padding: 6px 9px; display: grid; place-items: center; }
 .theme-cycle { border: 1px solid var(--line); background: var(--surface); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--fg); }
-.mobile-tools { display: flex; gap: 8px; align-items: center; }
 .side-foot .lang { justify-content: space-between; }
 .side-foot .lang button { flex: 1; }
-.mobile-brand { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.mobile-brand .brand { padding: 0; }
-@media (min-width: 900px) { .mobile-brand { display: none; } }
 
 /* ---------- common ---------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: 0 1px 2px rgba(20,27,45,.04); display: grid; gap: 12px; min-width: 0; }
 .card-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .card p { margin: 0; color: var(--muted); font-size: 14px; text-wrap: pretty; }
-.link-btn { border: 0; background: none; padding: 0; color: var(--defer); font-weight: 600; font-size: 13.5px; font-family: var(--font-body); }
+.link-btn { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; font-size: 13.5px; font-family: var(--font-body); }
 .btn-primary { border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; border-radius: 999px; padding: 10px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-primary:hover { filter: brightness(1.05); }
 .btn-ghost { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 13.5px; }
@@ -157,8 +184,65 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; }
 
-.home-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+.home-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 760px) { .home-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; } }
+
+/* home: glass cards inside the green header */
+.hx { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.25fr); gap: 10px; }
+.hx-ring { padding: 14px 10px 12px; display: grid; justify-items: center; align-content: center; gap: 6px; text-align: center; }
+.ring { position: relative; width: 78px; height: 78px; }
+.ring svg { display: block; transform: rotate(-90deg); }
+.ring b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 19px; font-variant-numeric: tabular-nums; }
+.hx-ring span { font-size: 12.5px; font-weight: 700; line-height: 1.2; }
+.hx-ring small { font-size: 11px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.hx-bal { padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.hx-bal .lbl { font-size: 12.5px; color: var(--ink-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hx-bal .amt-big { font-family: var(--font-display); font-weight: 800; font-size: clamp(24px, 7.4vw, 34px); line-height: 1.05; letter-spacing: -.01em; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hx-bal .amt-big.neg { color: #FFC2B8; }
+.hx-bal .sub { font-size: 11.5px; color: var(--ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hx-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.hx-inc { border: 0; background: none; padding: 0; color: #fff; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; min-width: 0; white-space: nowrap; }
+.hx-add { border: 0; background: #fff; color: var(--ink); font-weight: 800; font-size: 12.5px; border-radius: 999px; padding: 8px 13px; display: inline-flex; align-items: center; gap: 5px; flex: none; box-shadow: 0 6px 14px -8px rgba(0,0,0,.5); }
+.hx-add svg { width: 14px; height: 14px; }
+.strip { width: 100%; padding: 10px 12px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; text-align: left; }
+.strip-ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.18); color: #fff; font-weight: 800; flex: none; }
+.strip-txt { display: grid; min-width: 0; line-height: 1.25; }
+.strip-txt b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip-txt small { font-size: 12px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; color: #fff; }
+.badge.late { background: #E5484D; }
+.badge.soon { background: #D98A07; }
+.quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.quick button { border: 0; background: none; color: #fff; display: grid; justify-items: center; gap: 6px; padding: 0; font-size: 11.5px; font-weight: 600; min-width: 0; position: relative; }
+.quick button span.q { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: background .15s, transform .15s; }
+.quick button:hover span.q { background: rgba(255,255,255,.24); }
+.quick button:active span.q { transform: scale(.93); }
+.quick button:disabled { opacity: .5; }
+.quick button em { font-style: normal; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quick .cnt { position: absolute; top: -2px; left: calc(50% + 14px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #F2B544; color: #1B1405; font-size: 10.5px; font-weight: 800; display: grid; place-items: center; }
+@media (min-width: 900px) {
+  .hx-wrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+  .hx-side { display: grid; gap: 14px; align-content: space-between; }
+}
+@media (max-width: 360px) { .quick button span.q { width: 44px; height: 44px; } .quick button { font-size: 10.5px; } .ring { width: 66px; height: 66px; } .ring svg { width: 66px; height: 66px; } }
+
+/* home: section heads and colour tiles on the light panel */
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 2px 2px -4px; }
+.sec-head h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stack, .hx-wrap, .hx-side { display: grid; gap: 12px; min-width: 0; align-content: start; }
+.bottom-nav .nav-add svg { width: 24px; height: 24px; }
+.tile { border: 0; border-radius: 20px; padding: 14px 16px; color: #fff; text-align: left; display: grid; gap: 3px; position: relative; overflow: hidden; min-width: 0; box-shadow: 0 10px 22px -16px rgba(0,0,0,.6); transition: transform .15s; }
+.tile:hover { transform: translateY(-1px); }
+.tile.must { background: linear-gradient(140deg, #C23A3A, #E2654F); }
+.tile.defer { background: linear-gradient(140deg, #2C68A8, #4A92D6); }
+.tile::after { content: ""; position: absolute; right: -26px; top: -26px; width: 96px; height: 96px; border-radius: 50%; border: 16px solid rgba(255,255,255,.1); }
+.tile-ic { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.2); margin-bottom: 4px; }
+.tile-lbl { font-size: 12.5px; font-weight: 700; opacity: .92; }
+.tile-amt { font-family: var(--font-display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile-sub { font-size: 11.5px; opacity: .88; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile-bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; margin-top: 6px; }
+.tile-bar span { display: block; height: 100%; background: #fff; border-radius: 999px; }
 
 /* ---------- lists ---------- */
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
@@ -195,6 +279,10 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 .list-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); }
 .progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
 .progress span { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); padding: 0 4px; }
+.pager-btns { display: flex; gap: 6px; }
+.pager .mn-arrow { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); height: 34px; width: 34px; }
+.pager .mn-arrow:disabled { opacity: .4; }
 .add-inline { width: 100%; border: 1px dashed var(--line); background: transparent; border-radius: 12px; padding: 10px; color: var(--muted); font-weight: 600; font-size: 14px; }
 .add-inline:hover { color: var(--fg); border-color: var(--muted); }
 
@@ -340,12 +428,12 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 .sheet-actions { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; align-items: center; }
 .sheet-actions .right { display: flex; gap: 8px; margin-left: auto; }
 
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(142px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--ink-fg); padding: 10px 16px; border-radius: 12px; font-size: 14px; box-shadow: var(--shadow); max-width: calc(100% - 32px); animation: fade .2s ease; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(100px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--ink-fg); padding: 10px 16px; border-radius: 12px; font-size: 14px; box-shadow: var(--shadow); max-width: calc(100% - 32px); animation: fade .2s ease; }
 @media (min-width: 900px) { .toast { bottom: 24px; } }
 @keyframes fade { from { opacity: 0; } }
 @keyframes rise { from { transform: translateY(16px); opacity: .6; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-@media (max-width: 420px) { .month-label { min-width: 0; padding: 0 6px; gap: 6px; } .mn-cal { display: none; } .mn-text b { font-size: 13.5px; } .hero { padding: 18px; } .page-title { font-size: 23px; } .page-sub { font-size: 13px; } }
+@media (max-width: 420px) { .month-label { min-width: 0; padding: 0 6px; gap: 6px; } .mn-cal { display: none; } .mn-text b { font-size: 13.5px; } .hero { padding: 18px; } .page-title { font-size: 22px; } .page-sub { font-size: 12.5px; } }
 </style>
 
 <div id="root">
@@ -426,7 +514,10 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       t_saved: 'Disimpan.', t_added: '{n} ditambah.', t_deleted: '{n} dipadam.', t_moved: '{n} dipindahkan ke {m}.', t_moved_n: '{n} item dipindahkan ke {m}.',
       t_income: 'Pendapatan {m} disimpan.', t_carry: '{n} item berulang ditambah.', t_ex: 'Contoh disalin. Ubah atau padam yang tidak berkaitan.', t_cleared: 'Perbelanjaan {m} dipadam.',
       err_perm: 'Perubahan tidak dapat disimpan. Anda mungkin hanya ada akses lihat.', err_quota: 'Storan penuh. Padam beberapa perbelanjaan lama dan cuba lagi.',
-      err_gone: 'Penyimpanan tidak lagi tersedia. Muat semula halaman.', err_net: 'Tidak dapat menyimpan. Semak sambungan internet dan cuba lagi.'
+      err_gone: 'Penyimpanan tidak lagi tersedia. Muat semula halaman.', err_net: 'Tidak dapat menyimpan. Semak sambungan internet dan cuba lagi.',
+      hx_paid: 'Wajib dibayar', hx_of: 'Daripada pendapatan {a}', badge_late: '{n} lewat', badge_soon: '{n} hampir', tile_sub: '{n} item · {p}% dibayar',
+      q_must: 'Wajib', q_defer: 'Tangguh', q_inc: 'Pendapatan', q_copy: 'Salin', q_rep: 'Laporan', welcome: 'Selamat datang',
+      showing: 'Menunjukkan {a}–{b} daripada {n}', prev_page: 'Halaman sebelum', next_page: 'Halaman seterusnya'
     },
     en: {
       nav_home: 'Home', nav_exp: 'Expenses', nav_rep: 'Reports', nav_set: 'Settings',
@@ -492,7 +583,10 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       t_saved: 'Saved.', t_added: '{n} added.', t_deleted: '{n} deleted.', t_moved: '{n} moved to {m}.', t_moved_n: '{n} items moved to {m}.',
       t_income: 'Income for {m} saved.', t_carry: '{n} recurring items added.', t_ex: 'Examples copied. Edit or delete anything that does not apply.', t_cleared: 'Expenses for {m} deleted.',
       err_perm: 'This change could not be saved. You may only have view access.', err_quota: 'Storage is full. Delete some old expenses and try again.',
-      err_gone: 'Saving is no longer available. Reload the page.', err_net: 'Could not save. Check your connection and try again.'
+      err_gone: 'Saving is no longer available. Reload the page.', err_net: 'Could not save. Check your connection and try again.',
+      hx_paid: 'Must-pay paid', hx_of: 'From income of {a}', badge_late: '{n} late', badge_soon: '{n} due soon', tile_sub: '{n} items · {p}% paid',
+      q_must: 'Must pay', q_defer: 'Defer', q_inc: 'Income', q_copy: 'Copy', q_rep: 'Reports', welcome: 'Welcome',
+      showing: 'Showing {a}–{b} of {n}', prev_page: 'Previous page', next_page: 'Next page'
     }
   };
   const MONTHS = {
@@ -532,6 +626,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     setToken(tok) { srv.token = tok; try { if (tok) sessionStorage.setItem(SESSION_KEY, tok); else sessionStorage.removeItem(SESSION_KEY); } catch (e) {} }
   };
   const EXAMPLE_INCOME = 5200;
+  const PAGE_SIZE = 10;
 
   function makeT(lang) {
     const d = DICT[lang] || DICT.ms;
@@ -638,6 +733,11 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     sparkle: svg(html`<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>`, 18),
     lock: svg(html`<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>`, 16),
     cal: svg(html`<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>`, 16),
+    bill: svg(html`<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>`),
+    clock: svg(html`<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>`),
+    wallet: svg(html`<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><circle cx="16" cy="13.5" r="1.2"/>`),
+    copy: svg(html`<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>`),
+    pen: svg(html`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, 13),
     back: svg(html`<path d="M20 12H5M11 6l-6 6 6 6"/>`, 20),
     close: svg(html`<path d="M6 6l12 12M18 6L6 18"/>`, 16, 2.4),
     mark: html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#F2B544" stroke-width="2"/><path d="M3 10h18" stroke="#F2B544" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.6" fill="#F2B544"/></svg>`
@@ -695,62 +795,100 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
   }
 
   // ---------- pages ----------
-  function HomePage({ ctx, v, go, openAdd, onApplyPlan }) {
-    const { sym, t, lang, month, today, readOnly } = ctx;
-    const { income, mustT, deferT, mustPaid, must, defer } = v;
+  function homeCalc(v, ctx) {
+    const { sym, t, lang, month } = ctx;
+    const { income, mustT, deferT, defer } = v;
     const afterMust = income - mustT, afterAll = income - mustT - deferT;
     const next = mLong(shiftMonth(month, 1), lang);
-    let heroNote;
-    if (!income) heroNote = t('hero_noincome');
-    else if (afterMust < 0) heroNote = t('hero_bad', { a: esc(money(sym, -afterMust)) });
-    else if (afterAll < 0) heroNote = t('hero_warn', { a: esc(money(sym, -afterAll)) });
-    else heroNote = t('hero_good', { a: esc(money(sym, afterAll)) });
-    const paidPct = mustT ? mustPaid / mustT * 100 : 0;
-
     let status;
     if (!income) status = { k: 'none', c: 'var(--muted)', ic: '?', title: t('st_none_t'), p: t('st_none_p') };
     else if (afterAll >= 0) status = { k: 'good', c: 'var(--ok)', ic: '✓', title: t('st_good_t'), p: t('st_good_p', { a: money(sym, afterAll) }) };
     else if (afterMust >= 0) status = { k: 'warn', c: 'var(--warn)', ic: '!', title: t('st_warn_t'), p: t('st_warn_p', { a: money(sym, -afterAll), m: next }) };
     else status = { k: 'bad', c: 'var(--must)', ic: '!', title: t('st_bad_t'), p: t('st_bad_p', { a: money(sym, -afterAll) }) };
     const plan = income && afterAll < 0 ? planDefer(defer.filter(i => !i.paid), -afterAll) : { chosen: [], short: 0 };
+    return { afterMust, afterAll, next, status, plan };
+  }
+  const STRIP_BG = { good: '#2DBB74', warn: '#D98A07', bad: '#E5484D', none: 'rgba(255,255,255,.2)' };
+
+  // Glass cards, status strip and quick actions shown inside the green header on Home.
+  function HomeTop({ ctx, v, go, openAdd, carry, onCarry }) {
+    const { sym, t, lang, month, today, readOnly } = ctx;
+    const { afterMust, status } = homeCalc(v, ctx);
+    const pct = v.mustT ? Math.round(v.mustPaid / v.mustT * 100) : 0;
+    const R = 32, C = 2 * Math.PI * R;
+    const states = v.must.filter(i => !i.paid).map(i => dueState(i, month, today, t, lang).k);
+    const late = states.filter(k => k === 'late').length, soon = states.filter(k => k === 'soon').length;
+    const quick = [
+      ['q_must', Icon.bill, () => go('expenses', 'must')],
+      ['q_defer', Icon.clock, () => go('expenses', 'defer')],
+      ['q_inc', Icon.wallet, () => go('settings')],
+      ['q_copy', Icon.copy, onCarry, readOnly || !carry.length, carry.length],
+      ['q_rep', Icon.chart, () => go('reports')]
+    ];
+    return html`<div class="hx-wrap">
+      <div class="hx">
+        <div class="glass hx-ring">
+          <div class="ring" role="img" aria-label=${t('hx_paid') + ' ' + pct + '%'}>
+            <svg width="78" height="78" viewBox="0 0 78 78" aria-hidden="true">
+              <circle cx="39" cy="39" r=${R} fill="none" stroke="rgba(255,255,255,.2)" stroke-width="8" />
+              <circle cx="39" cy="39" r=${R} fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray=${C} stroke-dashoffset=${C * (1 - pct / 100)} opacity=${pct ? 1 : 0} style=${{ transition: 'stroke-dashoffset .5s ease' }} />
+            </svg>
+            <b>${pct}%</b>
+          </div>
+          <span>${t('hx_paid')}</span>
+          <small>${compact(sym, v.mustPaid)} / ${compact(sym, v.mustT)}</small>
+        </div>
+        <div class="glass hx-bal">
+          <span class="lbl">${t('left_after')}</span>
+          <span class=${'amt-big' + (afterMust < 0 ? ' neg' : '')}>${money(sym, afterMust, true)}</span>
+          <span class="sub">${v.income ? t('hx_of', { a: money(sym, v.income, true) }) : t('st_none_t')}</span>
+          <div class="hx-row">
+            <button class="hx-inc" onClick=${() => go('settings')}>${Icon.pen}${t('income')}</button>
+            ${!readOnly ? html`<button class="hx-add" onClick=${() => openAdd('must')}>${Icon.plus}${t('add')}</button>` : null}
+          </div>
+        </div>
+      </div>
+      <div class="hx-side">
+        <button class="glass strip" onClick=${() => go(v.income ? 'expenses' : 'settings', 'must')}>
+          <span class="strip-ic" style=${{ background: STRIP_BG[status.k] }} aria-hidden="true">${status.ic}</span>
+          <span class="strip-txt"><b>${status.title}</b><small>${status.p}</small></span>
+          ${late ? html`<span class="badge late">${t('badge_late', { n: late })}</span>` : soon ? html`<span class="badge soon">${t('badge_soon', { n: soon })}</span>` : html`<span></span>`}
+          ${Icon.right}
+        </button>
+        <div class="quick">${quick.map(([k, ic, fn, dis, n]) => html`<button key=${k} onClick=${fn} disabled=${!!dis}><span class="q">${ic}</span><em>${t(k)}</em>${n ? html`<span class="cnt">${n}</span>` : null}</button>`)}</div>
+      </div>
+    </div>`;
+  }
+
+  function HomePage({ ctx, v, go, openAdd, onApplyPlan }) {
+    const { sym, t, lang, month, today, readOnly } = ctx;
+    const { income, must, defer } = v;
+    const { next, status, plan } = homeCalc(v, ctx);
     const toPay = sortItems(must.filter(i => !i.paid), month, today).slice(0, 5);
+    const pc = (a, b) => b ? Math.round(a / b * 100) : 0;
+    const tiles = [['must', Icon.bill, v.mustT, must.length, pc(v.mustPaid, v.mustT)], ['defer', Icon.clock, v.deferT, defer.length, pc(sum(defer.filter(i => i.paid)), v.deferT)]];
+    const action = plan.chosen.length > 0 || !income;
 
     return html`<${React.Fragment}>
-      <section class="hero" aria-label=${t('left_after')}>
-        <div class="eyebrow">${t('left_after')}</div>
-        <div class=${'big' + (afterMust < 0 ? ' neg' : '')}>${money(sym, afterMust, true)}</div>
-        <${Rich} tag="p" cls="hero-note" text=${heroNote} />
-        <div class="meter" aria-hidden="true"><span style=${{ width: paidPct + '%', background: 'var(--ok)' }}></span></div>
-        <div class="meter-label"><span>${t('must')}</span><span class="num">${t('paid_of', { a: money(sym, mustPaid, true), b: money(sym, mustT, true) })}</span></div>
-      </section>
+      <div class="tiles">${tiles.map(([k, ic, tot, n, p]) => html`<button key=${k} class=${'tile ' + k} onClick=${() => go('expenses', k)}>
+        <span class="tile-ic">${ic}</span>
+        <span class="tile-lbl">${t(k)}</span>
+        <span class="tile-amt">${money(sym, tot, true)}</span>
+        <span class="tile-sub">${t('tile_sub', { n, p })}</span>
+        <span class="tile-bar" aria-hidden="true"><span style=${{ width: p + '%' }}></span></span>
+      </button>`)}</div>
 
-      <div class="figures">
-        <button class="figure" onClick=${() => go('settings')}>
-          <span class="figure-label"><span class="dot" style=${{ background: 'var(--ok)' }}></span>${t('income')}</span>
-          <span class="figure-value">${income ? money(sym, income, true) : t('set_income')}</span>
-          <span class="figure-hint">${t('tap_edit')}</span>
-        </button>
-        <button class="figure" onClick=${() => go('expenses', 'must')}>
-          <span class="figure-label"><span class="dot" style=${{ background: 'var(--must)' }}></span>${t('must')}</span>
-          <span class="figure-value">${money(sym, mustT, true)}</span>
-          <span class="figure-hint">${t('n_items', { n: must.length })}</span>
-        </button>
-        <button class="figure" onClick=${() => go('expenses', 'defer')}>
-          <span class="figure-label"><span class="dot" style=${{ background: 'var(--defer)' }}></span>${t('defer')}</span>
-          <span class="figure-value">${money(sym, deferT, true)}</span>
-          <span class="figure-hint">${t('n_items', { n: defer.length })}</span>
-        </button>
-      </div>
-
-      <div class="home-grid">
-        <section class="card">
-          <h2 class="card-title">${t('to_pay')} <button class="link-btn" onClick=${() => go('expenses', 'must')}>${t('see_all')} →</button></h2>
-          ${toPay.length
-            ? html`<ul class="list">${toPay.map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} />`)}</ul>`
-            : html`<div class="empty">${must.length ? t('all_paid') : t('no_must')}</div>`}
-          ${!readOnly && !must.length ? html`<button class="add-inline" onClick=${() => openAdd('must')}>${t('add_must')}</button>` : null}
-        </section>
-        <section class=${'card status ' + status.k}>
+      <div class="home-grid" style=${action ? null : { gridTemplateColumns: 'minmax(0, 1fr)' }}>
+        <div class="stack">
+          <div class="sec-head"><h2>${t('to_pay')}</h2><button class="link-btn" onClick=${() => go('expenses', 'must')}>${t('see_all')} →</button></div>
+          <section class="card">
+            ${toPay.length
+              ? html`<ul class="list">${toPay.map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} />`)}</ul>`
+              : html`<div class="empty">${must.length ? t('all_paid') : t('no_must')}</div>`}
+            ${!readOnly && !must.length ? html`<button class="add-inline" onClick=${() => openAdd('must')}>${t('add_must')}</button>` : null}
+          </section>
+        </div>
+        ${!action ? null : html`<section class=${'card status ' + status.k}>
           <div class="status-head">
             <span class="status-icon" style=${{ background: status.c }} aria-hidden="true">${status.ic}</span>
             <h3>${status.title}</h3>
@@ -760,7 +898,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
           ${plan.short > 0 && plan.chosen.length ? html`<p>${t('st_short', { a: money(sym, plan.short) })}</p>` : null}
           ${plan.chosen.length && !readOnly ? html`<button class="btn-primary" onClick=${() => onApplyPlan(plan.chosen)}>${t('move_n', { m: next })}</button>` : null}
           ${!income && !readOnly ? html`<button class="btn-primary" onClick=${() => go('settings')}>${t('go_settings')}</button>` : null}
-        </section>
+        </section>`}
       </div>
     <//>`;
   }
@@ -771,6 +909,11 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     const list = tab === 'must' ? v.must : v.defer;
     const needle = q.trim().toLowerCase();
     const shown = needle ? list.filter(i => (nm(i, ctx.lang) + ' ' + (i.note || '') + ' ' + catLabel(i.category, ctx.lang)).toLowerCase().includes(needle)) : list;
+    const [pg, setPg] = useState(0);
+    useEffect(() => setPg(0), [tab, needle, month]);
+    const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+    const at = Math.min(pg, pages - 1);
+    const slice = sortItems(shown, month, today).slice(at * PAGE_SIZE, at * PAGE_SIZE + PAGE_SIZE);
     const total = sum(list), paid = sum(list.filter(i => i.paid));
     const color = tab === 'must' ? 'var(--must)' : 'var(--defer)';
     return html`<${React.Fragment}>
@@ -788,8 +931,15 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
         <div class="list-head num"><span>${t('list_paid', { a: money(sym, paid) })}</span><span>${t('list_left', { a: money(sym, total - paid) })}</span></div>
         ${list.length > 4 ? html`<input id="search" class="search" type="search" value=${q} onInput=${e => setQ(e.target.value)} placeholder=${t('search')} aria-label=${t('search')} />` : null}
         ${shown.length
-          ? html`<ul class="list">${sortItems(shown, month, today).map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} showDefer=${tab === 'defer'} />`)}</ul>`
+          ? html`<ul class="list">${slice.map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} showDefer=${tab === 'defer'} />`)}</ul>`
           : html`<div class="empty">${needle ? t('empty_search') : (tab === 'must' ? t('empty_must') : t('empty_defer'))}</div>`}
+        ${pages > 1 ? html`<div class="pager">
+          <span class="num">${t('showing', { a: at * PAGE_SIZE + 1, b: at * PAGE_SIZE + slice.length, n: shown.length })}</span>
+          <span class="pager-btns">
+            <button class="mn-arrow" onClick=${() => setPg(at - 1)} disabled=${at === 0} aria-label=${t('prev_page')}>${Icon.left}</button>
+            <button class="mn-arrow" onClick=${() => setPg(at + 1)} disabled=${at >= pages - 1} aria-label=${t('next_page')}>${Icon.right}</button>
+          </span>
+        </div>` : null}
         ${!readOnly ? html`<button class="add-inline" onClick=${() => openAdd(tab)}>${tab === 'must' ? t('add_must') : t('add_defer')}</button>` : null}
       </section>
     <//>`;
@@ -1243,7 +1393,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       let dark = theme === 'dark';
       if (theme === 'system') { try { dark = HOST_THEME ? HOST_THEME === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {} }
       const m = document.querySelector('meta[name="theme-color"]');
-      if (m) m.setAttribute('content', dark ? '#0A0E18' : '#F2F4F8');
+      if (m) m.setAttribute('content', dark ? '#0E4A30' : '#146B44');
     }, [theme]);
 
     useEffect(() => {
@@ -1464,6 +1614,8 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     const NAV = [['home', t('nav_home'), Icon.home], ['expenses', t('nav_exp'), Icon.list], ['reports', t('nav_rep'), Icon.chart], ['settings', t('nav_set'), Icon.gear]];
     const titles = { home: [t('nav_home'), t('home_sub', { m: mLong(month, lang, true) })], expenses: [t('nav_exp'), t('exp_sub', { m: mLong(month, lang, true) })], reports: [t('nav_rep'), t('rep_sub', { m: mLong(month, lang, true) })], settings: [t('nav_set'), t('set_sub')] };
     const isNow = month === monthKey(today);
+    const hr = new Date().getHours();
+    const greet = t(hr >= 5 && hr < 12 ? 'greet_1' : hr >= 12 && hr < 15 ? 'greet_2' : hr >= 15 && hr < 19 ? 'greet_3' : 'greet_4');
 
     let body;
     if (loading) body = html`<section class="card"><div class="empty">${t('loading')}</div></section>`;
@@ -1488,20 +1640,26 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       </nav>
 
       <main class="content">
-        <div class="mobile-brand">
-          <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang Belanja</div></div>
-          <div class="mobile-tools">${me ? html`<button class="me-btn" onClick=${() => r.lock(false)} aria-label=${t('lock_now') + ' (' + me.name + ')'} title=${t('lock_now')}><${Avatar} p=${me} size="sm" /></button>` : null}<${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
-        </div>
-        <header class="page-head">
-          <div class="head-text">
-            <h1 class="page-title">${titles[page][0]}</h1>
-            <p class="page-sub">${titles[page][1]}</p>
+        <header class="top"><div class="top-in">
+          <div class="top-bar">
+            <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang Belanja</div></div>
+            <div class="top-tools">${me ? html`<button class="me-btn" onClick=${() => r.lock(false)} aria-label=${t('lock_now') + ' (' + me.name + ')'} title=${t('lock_now')}><${Avatar} p=${me} size="sm" /></button>` : null}<${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
           </div>
-          <div class="head-tools">
-            <${MonthNav} month=${month} setMonth=${setMonth} lang=${lang} t=${t} />
-            ${!isNow ? html`<button class="today-link" onClick=${() => setMonth(monthKey(today))}>↺ ${t('this_month')}</button>` : null}
+          <div class="page-head">
+            <div class="head-text">
+              ${page === 'home' ? html`<span class="hello">${greet},</span>` : null}
+              <h1 class="page-title">${page === 'home' ? (me ? me.name : t('welcome')) : titles[page][0]}</h1>
+              ${page !== 'home' ? html`<p class="page-sub">${titles[page][1]}</p>` : null}
+            </div>
+            <div class="head-tools">
+              <${MonthNav} month=${month} setMonth=${setMonth} lang=${lang} t=${t} />
+              ${!isNow ? html`<button class="today-link" onClick=${() => setMonth(monthKey(today))}>↺ ${t('this_month')}</button>` : null}
+            </div>
           </div>
-        </header>
+          ${page === 'home' && !loading ? html`<${HomeTop} ctx=${ctx} v=${v} go=${go} openAdd=${openAdd} carry=${carry} onCarry=${onCarry} />` : null}
+        </div></header>
+
+        <div class="page"><div class="page-in">
 
         ${exampleMode && page !== 'settings' ? html`<div class="banner">
           <div class="banner-body"><span class="banner-ic">${Icon.sparkle}</span><${Rich} tag="p" text=${t('ex_banner')} /></div>
@@ -1516,12 +1674,14 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
         </div>` : null}
 
         ${body}
+        </div></div>
       </main>
 
       <nav class="bottom-nav" aria-label="Menu">
-        ${NAV.map(([id, label, ic]) => html`<button key=${id} aria-current=${page === id ? 'page' : undefined} onClick=${() => go(id)}><span class="ic">${ic}</span>${label}</button>`)}
+        ${[NAV[0], NAV[1], null, NAV[2], NAV[3]].map(n => n
+          ? html`<button key=${n[0]} aria-current=${page === n[0] ? 'page' : undefined} onClick=${() => go(n[0])}><span class="ic">${n[2]}</span>${n[1]}</button>`
+          : html`<button key="add" class="nav-add" onClick=${() => openAdd()} disabled=${loading} aria-label=${t('add_expense')}><span class="ic">${Icon.plus}</span>${t('add')}</button>`)}
       </nav>
-      ${!loading && page !== 'settings' ? html`<button class="fab" onClick=${() => openAdd()}>${Icon.plus}${t('add')}</button>` : null}
       ${sheet ? html`<${Sheet} init=${sheet} ctx=${ctx} onClose=${() => setSheet(null)} onSave=${onSave} onDelete=${onDelete} />` : null}
       ${toast ? html`<div class="toast" role="status">${toast}</div>` : null}
     </div>`;

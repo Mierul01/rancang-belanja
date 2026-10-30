@@ -9,7 +9,7 @@ const head = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F2F4F8">
+<meta name="theme-color" content="#146B44">
 <meta name="description" content="Rancang perbelanjaan bulanan: bil wajib dan boleh tangguh.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
