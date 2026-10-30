@@ -285,13 +285,16 @@ Tailscale Funnel gives the app a **permanent** public HTTPS address such as `htt
 
 1. Install Tailscale on the PC (`winget install Tailscale.Tailscale`) and sign in.
 2. Approve Funnel for your account when Tailscale asks (a one-time click).
-3. Run:
+3. Give the PC a fixed name, so the address does not change if Windows renames the PC, then run:
    ```bash
+   tailscale set --hostname=rancang-belanja
    tailscale funnel --bg 8088
    ```
 4. `tailscale funnel status` shows your address. Funnel keeps running in the background and comes back after a reboot.
 
 To stop sharing: `tailscale funnel --https=443 off`.
+
+If the link ever stops opening, run `tailscale funnel status` and `tailscale status`. If the PC name shown there differs from the address in the link, run the two commands in step 3 again and use the new address.
 
 Also turn on **Start Docker Desktop when you sign in** and switch off PC sleep, so the app is available after a restart.
 
