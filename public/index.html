@@ -22,10 +22,10 @@
 <style>
 /* Layout: app shell. Phone = bottom tab bar + floating add button; desktop = left sidebar menu. Home is one ink summary card, three plain figures, one status card, one "to pay" list. */
 :root {
-  --bg: #F3F6F4;
+  --bg: #D8E9DF;
   --surface: #FFFFFF;
   --surface-2: #F3F7F4;
-  --line: #E0E7E2;
+  --line: #D3E0D7;
   --fg: #12201A;
   --muted: #5A6B62;
   --ink: #146B44;
@@ -67,7 +67,7 @@
 }
 
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+body { background: radial-gradient(560px 340px at -12% -6%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 70%), radial-gradient(480px 320px at 112% -4%, rgba(242,181,68,.38), transparent 70%), radial-gradient(520px 420px at 50% 120%, color-mix(in srgb, var(--defer) 20%, transparent), transparent 70%), var(--bg); background-attachment: fixed; min-height: 100vh; color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; }
