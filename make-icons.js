@@ -1,5 +1,6 @@
 // Draws the app icon as PNGs using only Node built-ins: a white budget card with rising green
 // bars and a gold coin, in front of a tilted gold card, on a deep green gradient.
+// The view-only demo (docs/) gets the same art on violet, so the two are easy to tell apart.
 // Shapes are signed-distance functions sampled 4x4 per pixel for smooth edges.
 // Usage: node make-icons.js
 const fs = require('fs');
@@ -36,8 +37,13 @@ function sdBox(x, y, cx, cy, hw, hh, r, deg) {
 }
 const sdCircle = (x, y, cx, cy, r) => Math.hypot(x - cx, y - cy) - r;
 
+const BACKGROUNDS = {
+  real: ['#06321F', '#1C8A55', '#2FBF7A'],
+  demo: ['#15123D', '#3B3A9E', '#7B6CF0']
+};
+let BG = BACKGROUNDS.real.map(hex);
+
 const C = {
-  bgA: hex('#06321F'), bgB: hex('#1C8A55'), bgC: hex('#2FBF7A'),
   goldA: hex('#FFE29A'), goldB: hex('#E0A031'), goldC: hex('#B9781A'),
   card: hex('#FFFFFF'), card2: hex('#E3F4EA'),
   barA: hex('#17905A'), barB: hex('#38C985'), ink: hex('#0E4A30')
@@ -47,7 +53,7 @@ const C = {
 function shade(x, y) {
   // Background: diagonal green gradient, light bloom top-left, warm glow bottom-right.
   const g = clamp((x * 0.55 + (512 - y) * 0.45) / 512, 0, 1);
-  let col = g < 0.6 ? mix(C.bgA, C.bgB, g / 0.6) : mix(C.bgB, C.bgC, (g - 0.6) / 0.4);
+  let col = g < 0.6 ? mix(BG[0], BG[1], g / 0.6) : mix(BG[1], BG[2], (g - 0.6) / 0.4);
   col = mix(col, [255, 255, 255], 0.16 * Math.max(0, 1 - Math.hypot(x - 110, y - 70) / 300));
   col = mix(col, C.goldA, 0.14 * Math.max(0, 1 - Math.hypot(x - 470, y - 470) / 260));
 
@@ -112,7 +118,16 @@ function draw(size) {
   ]);
 }
 
-for (const [size, name] of [[180, 'apple-touch-icon.png'], [192, 'icon-192.png'], [512, 'icon-512.png']]) {
-  fs.writeFileSync(path.join(__dirname, 'public', name), draw(size));
-  console.log('public/' + name);
+const svg = fs.readFileSync(path.join(__dirname, 'public', 'icon.svg'), 'utf8');
+for (const [kind, dir] of [['real', 'public'], ['demo', 'docs']]) {
+  BG = BACKGROUNDS[kind].map(hex);
+  fs.mkdirSync(path.join(__dirname, dir), { recursive: true });
+  for (const [size, name] of [[180, 'apple-touch-icon.png'], [192, 'icon-192.png'], [512, 'icon-512.png']]) {
+    fs.writeFileSync(path.join(__dirname, dir, name), draw(size));
+    console.log(dir + '/' + name);
+  }
+  if (kind === 'demo') {
+    const out = BACKGROUNDS.real.reduce((t, c, i) => t.split(c).join(BACKGROUNDS.demo[i]), svg);
+    fs.writeFileSync(path.join(__dirname, dir, 'icon.svg'), out);
+  }
 }

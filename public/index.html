@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Belanja">
-<style>body{margin:0}body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#146B44;z-index:100;pointer-events:none}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 <title>Rancang Belanja</title>
@@ -67,6 +67,11 @@
 }
 
 * { box-sizing: border-box; }
+/* Fills the phone status bar area, which the installed app draws under (green in light mode, page colour in dark). */
+:root { --strip: #146B44; }
+:root[data-theme="dark"] { --strip: #0B110E; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --strip: #0B110E; } }
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; z-index: 100; pointer-events: none; height: env(safe-area-inset-top, 0px); background: var(--strip); }
 body { background: radial-gradient(560px 340px at -12% -6%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 70%), radial-gradient(480px 320px at 112% -4%, rgba(242,181,68,.38), transparent 70%), radial-gradient(520px 420px at 50% 120%, color-mix(in srgb, var(--defer) 20%, transparent), transparent 70%), var(--bg); background-attachment: fixed; min-height: 100vh; color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
