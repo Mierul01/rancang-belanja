@@ -1,10 +1,10 @@
-// Draws the app icon (wallet mark on navy) as PNGs using only Node built-ins.
+// Draws the app icon (gold wallet mark on a green gradient) as PNGs using only Node built-ins.
 // Usage: node make-icons.js
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const NAVY = [0x16, 0x20, 0x3d];
+const DEEP = [0x0e, 0x4a, 0x30], LIGHT = [0x2a, 0xa5, 0x6c];
 const GOLD = [0xf2, 0xb5, 0x44];
 
 function crc32(buf) {
@@ -45,7 +45,12 @@ function draw(size) {
       if (inside) cov = Math.max(cov, Math.max(0, Math.min(1, stroke / 2 - Math.abs(py - lineY) + 0.5)));
       cov = Math.max(cov, Math.max(0, Math.min(1, dotR - Math.hypot(px - dotX, py - dotY) + 0.5)));
       const o = y * (size * 3 + 1) + 1 + x * 3;
-      for (let i = 0; i < 3; i++) raw[o + i] = Math.round(NAVY[i] + (GOLD[i] - NAVY[i]) * cov);
+      // Diagonal green gradient with a soft gold glow in the top-right corner.
+      const g = (px + py) / (2 * size), glow = Math.max(0, 1 - Math.hypot(px - size, py) / (size * 0.75)) * 0.22;
+      for (let i = 0; i < 3; i++) {
+        const bg = DEEP[i] + (LIGHT[i] - DEEP[i]) * g + (GOLD[i] - DEEP[i]) * glow;
+        raw[o + i] = Math.round(bg + (GOLD[i] - bg) * cov);
+      }
     }
   }
   const ihdr = Buffer.alloc(13);
@@ -57,7 +62,7 @@ function draw(size) {
   ]);
 }
 
-for (const size of [192, 512]) {
-  fs.writeFileSync(path.join(__dirname, 'public', `icon-${size}.png`), draw(size));
-  console.log(`public/icon-${size}.png`);
+for (const [size, name] of [[180, 'apple-touch-icon.png'], [192, 'icon-192.png'], [512, 'icon-512.png']]) {
+  fs.writeFileSync(path.join(__dirname, 'public', name), draw(size));
+  console.log('public/' + name);
 }

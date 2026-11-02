@@ -16,7 +16,7 @@ const head = extra => `<!doctype html>
 <meta name="description" content="Rancang perbelanjaan bulanan: bil wajib dan boleh tangguh.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -33,7 +33,7 @@ console.log('Built public/index.html');
 const docs = path.join(__dirname, 'docs');
 fs.mkdirSync(docs, { recursive: true });
 fs.writeFileSync(path.join(docs, 'index.html'), page('<script>window.RB_VIEW_ONLY = true;</script>\n'));
-for (const f of ['icon.svg', 'icon-192.png', 'icon-512.png']) fs.copyFileSync(path.join(__dirname, 'public', f), path.join(docs, f));
+for (const f of ['icon.svg', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png']) fs.copyFileSync(path.join(__dirname, 'public', f), path.join(docs, f));
 const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'manifest.webmanifest'), 'utf8'));
 Object.assign(manifest, { name: 'Rancang Belanja (Demo)', short_name: 'Belanja Demo', start_url: './', scope: './' });
 fs.writeFileSync(path.join(docs, 'manifest.webmanifest'), JSON.stringify(manifest, null, 2) + '\n');
