@@ -1,11 +1,10 @@
-// Draws the app icon (gold wallet mark on a green gradient) as PNGs using only Node built-ins.
+// Draws the app icon as PNGs using only Node built-ins: a white budget card with rising green
+// bars and a gold coin, in front of a tilted gold card, on a deep green gradient.
+// Shapes are signed-distance functions sampled 4x4 per pixel for smooth edges.
 // Usage: node make-icons.js
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-
-const DEEP = [0x0e, 0x4a, 0x30], LIGHT = [0x2a, 0xa5, 0x6c];
-const GOLD = [0xf2, 0xb5, 0x44];
 
 function crc32(buf) {
   let c, crc = 0xffffffff;
@@ -23,34 +22,85 @@ function chunk(type, data) {
   return Buffer.concat([len, td, crc]);
 }
 
-// Signed distance to a rounded rectangle centred at (cx, cy).
-function sdRoundRect(x, y, cx, cy, hw, hh, r) {
-  const qx = Math.abs(x - cx) - hw + r, qy = Math.abs(y - cy) - hh + r;
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+
+// Signed distance to a rounded rectangle (centre, half size, corner radius, rotation in degrees).
+function sdBox(x, y, cx, cy, hw, hh, r, deg) {
+  let px = x - cx, py = y - cy;
+  if (deg) { const a = -deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a); [px, py] = [px * c - py * s, px * s + py * c]; }
+  const qx = Math.abs(px) - hw + r, qy = Math.abs(py) - hh + r;
   return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+}
+const sdCircle = (x, y, cx, cy, r) => Math.hypot(x - cx, y - cy) - r;
+
+const C = {
+  bgA: hex('#06321F'), bgB: hex('#1C8A55'), bgC: hex('#2FBF7A'),
+  goldA: hex('#FFE29A'), goldB: hex('#E0A031'), goldC: hex('#B9781A'),
+  card: hex('#FFFFFF'), card2: hex('#E3F4EA'),
+  barA: hex('#17905A'), barB: hex('#38C985'), ink: hex('#0E4A30')
+};
+
+// Colour of one sample point in the 512 design space.
+function shade(x, y) {
+  // Background: diagonal green gradient, light bloom top-left, warm glow bottom-right.
+  const g = clamp((x * 0.55 + (512 - y) * 0.45) / 512, 0, 1);
+  let col = g < 0.6 ? mix(C.bgA, C.bgB, g / 0.6) : mix(C.bgB, C.bgC, (g - 0.6) / 0.4);
+  col = mix(col, [255, 255, 255], 0.16 * Math.max(0, 1 - Math.hypot(x - 110, y - 70) / 300));
+  col = mix(col, C.goldA, 0.14 * Math.max(0, 1 - Math.hypot(x - 470, y - 470) / 260));
+
+  const over = (c, a) => { col = mix(col, c, clamp(a, 0, 1)); };
+
+  // Back card: tilted gold, with a soft shadow and a dark stripe.
+  const back = sdBox(x, y, 290, 206, 122, 78, 30, -14);
+  over([0, 20, 10], 0.32 * (1 - smooth(-4, 26, sdBox(x, y - 12, 290, 206, 122, 78, 30, -14))));
+  if (back < 0.5) {
+    let c = mix(C.goldA, C.goldB, clamp((y - 120) / 180, 0, 1));
+    const stripe = sdBox(x, y, 290, 180, 122, 13, 0, -14);
+    if (stripe < 0.5 && back < -1) c = mix(c, C.goldC, 0.55 * clamp(0.5 - stripe, 0, 1));
+    over(c, 0.5 - back);
+  }
+
+  // Front card: white with a long soft shadow.
+  over([0, 30, 15], 0.38 * (1 - smooth(-6, 34, sdBox(x, y - 20, 246, 304, 150, 98, 36, 0))));
+  const front = sdBox(x, y, 246, 304, 150, 98, 36, 0);
+  if (front < 0.5) {
+    over(mix(C.card, C.card2, clamp((y - 206) / 196, 0, 1)), 0.5 - front);
+    // Rising bars.
+    [[150, 46], [196, 74], [242, 106]].forEach(([bx, h]) => {
+      const d = sdBox(x, y, bx, 366 - h / 2, 15, h / 2, 9, 0);
+      if (d < 0.5) over(mix(C.barB, C.barA, clamp((y - (366 - h)) / h, 0, 1)), 0.5 - d);
+    });
+    // Gold coin with an inner ring.
+    const coin = sdCircle(x, y, 334, 262, 34);
+    over([0, 40, 20], 0.18 * (1 - smooth(-2, 10, sdCircle(x, y - 5, 334, 262, 34))));
+    if (coin < 0.5) {
+      over(mix(C.goldA, C.goldB, clamp((y - 228) / 68, 0, 1)), 0.5 - coin);
+      const ring = Math.abs(sdCircle(x, y, 334, 262, 21)) - 3;
+      if (ring < 0.5) over(C.goldC, (0.5 - ring) * 0.8);
+    }
+    // Thin line under the bars.
+    const base = sdBox(x, y, 220, 376, 92, 2.5, 2.5, 0);
+    if (base < 0.5) over(C.ink, (0.5 - base) * 0.18);
+  }
+  return col;
 }
 
 function draw(size) {
-  // Design space is 512; the mark sits inside the maskable safe zone.
-  const s = size / 512, stroke = 26 * s;
-  const cx = 256 * s, cy = 256 * s, hw = 148 * s, hh = 106 * s, rad = 42 * s;
-  const lineY = 214 * s, dotX = 326 * s, dotY = 292 * s, dotR = 23 * s;
+  const s = 512 / size, N = 4;
   const raw = Buffer.alloc(size * (size * 3 + 1));
   for (let y = 0; y < size; y++) {
     raw[y * (size * 3 + 1)] = 0;
     for (let x = 0; x < size; x++) {
-      const px = x + 0.5, py = y + 0.5;
-      const d = sdRoundRect(px, py, cx, cy, hw, hh, rad);
-      let cov = Math.max(0, Math.min(1, stroke / 2 - Math.abs(d) + 0.5));
-      const inside = d < 0 && px > cx - hw && px < cx + hw;
-      if (inside) cov = Math.max(cov, Math.max(0, Math.min(1, stroke / 2 - Math.abs(py - lineY) + 0.5)));
-      cov = Math.max(cov, Math.max(0, Math.min(1, dotR - Math.hypot(px - dotX, py - dotY) + 0.5)));
-      const o = y * (size * 3 + 1) + 1 + x * 3;
-      // Diagonal green gradient with a soft gold glow in the top-right corner.
-      const g = (px + py) / (2 * size), glow = Math.max(0, 1 - Math.hypot(px - size, py) / (size * 0.75)) * 0.22;
-      for (let i = 0; i < 3; i++) {
-        const bg = DEEP[i] + (LIGHT[i] - DEEP[i]) * g + (GOLD[i] - DEEP[i]) * glow;
-        raw[o + i] = Math.round(bg + (GOLD[i] - bg) * cov);
+      const acc = [0, 0, 0];
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+        const c = shade((x + (i + 0.5) / N) * s, (y + (j + 0.5) / N) * s);
+        acc[0] += c[0]; acc[1] += c[1]; acc[2] += c[2];
       }
+      const o = y * (size * 3 + 1) + 1 + x * 3;
+      for (let k = 0; k < 3; k++) raw[o + k] = Math.round(clamp(acc[k] / (N * N), 0, 255));
     }
   }
   const ihdr = Buffer.alloc(13);
