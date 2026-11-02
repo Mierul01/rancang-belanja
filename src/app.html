@@ -274,6 +274,9 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 .list-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); }
 .progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
 .progress span { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+.view-pill { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); font-size: 13px; color: var(--muted); }
+.view-pill svg { color: var(--accent); flex: none; }
+.view-pill b { color: var(--fg); }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); padding: 0 4px; }
 .pager-btns { display: flex; gap: 6px; }
 .pager .mn-arrow { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); height: 34px; width: 34px; }
@@ -322,7 +325,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 .divider { height: 1px; background: var(--line); }
 
 /* ---------- lock screen ---------- */
-.gate { position: relative; isolation: isolate; min-height: 100vh; min-height: 100dvh; padding-inline: 16px; padding-block: clamp(20px, 8vh, 88px) 32px; background-image: radial-gradient(640px 320px at 50% -70px, color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%), radial-gradient(520px 420px at -10% 100%, color-mix(in srgb, var(--defer) 16%, transparent), transparent 70%), radial-gradient(460px 360px at 112% 70%, color-mix(in srgb, var(--ok) 12%, transparent), transparent 70%); }
+.gate { position: relative; isolation: isolate; min-height: 100vh; min-height: 100dvh; padding-inline: 16px; padding-block: calc(env(safe-area-inset-top, 0px) + clamp(20px, 8vh, 88px)) 32px; background-image: radial-gradient(640px 320px at 50% -70px, color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%), radial-gradient(520px 420px at -10% 100%, color-mix(in srgb, var(--defer) 16%, transparent), transparent 70%), radial-gradient(460px 360px at 112% 70%, color-mix(in srgb, var(--ok) 12%, transparent), transparent 70%); }
 .gate::before { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; background-image: radial-gradient(color-mix(in srgb, var(--fg) 11%, transparent) 1px, transparent 1.4px); background-size: 22px 22px; -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 80%); mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 80%); }
 .gate-art { position: fixed; left: 0; right: 0; bottom: 0; height: clamp(170px, 30vh, 320px); z-index: -1; pointer-events: none; }
 .gate-art svg { display: block; width: 100%; height: 100%; }
@@ -549,7 +552,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       err_perm: 'Perubahan tidak dapat disimpan. Anda mungkin hanya ada akses lihat.', err_quota: 'Storan penuh. Padam beberapa perbelanjaan lama dan cuba lagi.',
       err_gone: 'Penyimpanan tidak lagi tersedia. Muat semula halaman.', err_net: 'Tidak dapat menyimpan. Semak sambungan internet dan cuba lagi.',
       hx_paid: 'Wajib dibayar', hx_of: 'Daripada pendapatan {a}', badge_late: '{n} lewat', badge_soon: '{n} hampir', tile_sub: '{n} item · {p}% dibayar',
-      q_must: 'Wajib', q_defer: 'Tangguh', q_inc: 'Pendapatan', q_copy: 'Salin', q_rep: 'Laporan', welcome: 'Selamat datang', w_left: 'Baki', w_short: 'Kurang {a}',
+      q_must: 'Wajib', q_defer: 'Tangguh', q_inc: 'Pendapatan', q_copy: 'Salin', q_rep: 'Laporan', welcome: 'Selamat datang', view_t: 'Paparan demo.', view_p: 'Data contoh sahaja, tidak boleh diubah.', w_left: 'Baki', w_short: 'Kurang {a}',
       showing: 'Menunjukkan {a}–{b} daripada {n}', prev_page: 'Halaman sebelum', next_page: 'Halaman seterusnya'
     },
     en: {
@@ -618,7 +621,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       err_perm: 'This change could not be saved. You may only have view access.', err_quota: 'Storage is full. Delete some old expenses and try again.',
       err_gone: 'Saving is no longer available. Reload the page.', err_net: 'Could not save. Check your connection and try again.',
       hx_paid: 'Must-pay paid', hx_of: 'From income of {a}', badge_late: '{n} late', badge_soon: '{n} due soon', tile_sub: '{n} items · {p}% paid',
-      q_must: 'Must pay', q_defer: 'Defer', q_inc: 'Income', q_copy: 'Copy', q_rep: 'Reports', welcome: 'Welcome', w_left: 'Left', w_short: '{a} short',
+      q_must: 'Must pay', q_defer: 'Defer', q_inc: 'Income', q_copy: 'Copy', q_rep: 'Reports', welcome: 'Welcome', view_t: 'Demo view.', view_p: 'Sample data only, nothing can be changed.', w_left: 'Left', w_short: '{a} short',
       showing: 'Showing {a}–{b} of {n}', prev_page: 'Previous page', next_page: 'Next page'
     }
   };
@@ -638,6 +641,8 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
   const LANG_KEY = 'paycheck-planner-lang';
   const THEME_KEY = 'paycheck-planner-theme';
   const HOST_THEME = document.documentElement.getAttribute('data-theme');
+  // Showcase build (GitHub Pages): sample data only, nothing can be changed or saved.
+  const VIEW_ONLY = !!window.RB_VIEW_ONLY;
   const nm = (i, lang) => i.i18n ? i.i18n[lang] : i.name;
   const SESSION_KEY = 'rancang-belanja-session';
   const AUTO_LOCK_MS = 15 * 60 * 1000;
@@ -741,6 +746,18 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       e('Weekend trip to Melaka', 'Percutian hujung minggu ke Melaka', 900, 'defer', 'Leisure', 26, { recurring: false })
     ];
   }
+  // Six months of sample data for the showcase, so Reports has a real trend.
+  function showcaseItems(month) {
+    const out = [];
+    [0.92, 1.06, 0.97, 1.12, 0.95, 1].forEach((f, k) => {
+      const d = k - 5, m = shiftMonth(month, d);
+      exampleItems(m).forEach(i => {
+        if (d < 0 && !i.recurring) return;
+        out.push(Object.assign({}, i, { id: i.id + '-' + m, seriesId: i.id, amount: i.priority === 'must' ? i.amount : Math.round(i.amount * f), paid: d < 0 ? true : i.paid }));
+      });
+    });
+    return out;
+  }
   function errKey(e) {
     const c = e && e.code;
     if (c === 'invalid_argument') return 'err_perm';
@@ -770,6 +787,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     clock: svg(html`<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>`),
     wallet: svg(html`<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><circle cx="16" cy="13.5" r="1.2"/>`),
     copy: svg(html`<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>`),
+    eye: svg(html`<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>`, 17),
     pen: svg(html`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, 13),
     back: svg(html`<path d="M20 12H5M11 6l-6 6 6 6"/>`, 20),
     close: svg(html`<path d="M6 6l12 12M18 6L6 18"/>`, 16, 2.4),
@@ -1082,14 +1100,14 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       <div class="set-row">
         <div><h3>${t('inc_t', { m: mLong(month, lang, true) })}</h3><p>${t('inc_p')}</p></div>
         <form class="inline-form" onSubmit=${saveInc}>
-          <input id="income" class="input num" type="number" inputmode="decimal" min="0" step="0.01" value=${inc} onInput=${e => setInc(e.target.value)} placeholder=${sym + ' 0.00'} aria-label=${t('income')} disabled=${loading} />
-          <button class="btn-primary" type="submit" disabled=${loading}>${t('save')}</button>
+          <input id="income" class="input num" type="number" inputmode="decimal" min="0" step="0.01" value=${inc} onInput=${e => setInc(e.target.value)} placeholder=${sym + ' 0.00'} aria-label=${t('income')} disabled=${readOnly} />
+          <button class="btn-primary" type="submit" disabled=${readOnly}>${t('save')}</button>
         </form>
       </div>
       <div class="divider"></div>
       <div class="set-row">
         <div><h3>${t('cur_t')}</h3><p>${t('cur_p')}</p></div>
-        <select id="currency" class="select" value=${sym} onChange=${e => onCurrency(e.target.value)} disabled=${loading} aria-label=${t('cur_t')}>
+        <select id="currency" class="select" value=${sym} onChange=${e => onCurrency(e.target.value)} disabled=${readOnly} aria-label=${t('cur_t')}>
           ${CURRENCIES.map(([s, l]) => html`<option key=${s} value=${s}>${l}</option>`)}
         </select>
       </div>
@@ -1460,6 +1478,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
         setBackend('local'); setLoading(false);
       };
       (async () => {
+        if (VIEW_ONLY) { setBackend('local'); setLoading(false); return; }
         const c = window.claude;
         if (!c || !c.use) {
           let info = null;
@@ -1500,7 +1519,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
     }, []);
 
     useEffect(() => {
-      if (backend !== 'local' || loading) return;
+      if (backend !== 'local' || loading || VIEW_ONLY) return;
       try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ items, profile })); } catch (e) {}
     }, [items, profile, backend, loading]);
 
@@ -1598,14 +1617,14 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 
     const sym = profile.currency || 'RM';
     const exampleMode = !loading && items.length === 0 && !profile.started && !(backend === 'server' && !me);
-    useEffect(() => { if (exampleMode && !demo) setDemo(exampleItems(monthKey(today))); if (!exampleMode && demo) setDemo(null); }, [exampleMode, demo]);
+    useEffect(() => { if (exampleMode && !demo) setDemo(VIEW_ONLY ? showcaseItems(monthKey(today)) : exampleItems(monthKey(today))); if (!exampleMode && demo) setDemo(null); }, [exampleMode, demo]);
     const source = exampleMode ? (demo || []) : items;
     const view = source.filter(i => i.month === month);
     const income = exampleMode ? demoIncome : incomeFor(profile, month);
     const must = view.filter(i => i.priority === 'must');
     const defer = view.filter(i => i.priority !== 'must');
     const v = { view, income, must, defer, mustT: sum(must), deferT: sum(defer), mustPaid: sum(must.filter(i => i.paid)) };
-    const readOnly = loading;
+    const readOnly = loading || VIEW_ONLY;
     const newDemoId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     const A = exampleMode ? {
       add: async d => setDemo(xs => (xs || []).concat([Object.assign({}, d, { id: newDemoId() })])),
@@ -1690,7 +1709,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       <nav class="side" aria-label="Menu">
         <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang<br/>Belanja</div></div>
         ${NAV.map(([id, label, ic]) => html`<button key=${id} class="side-link" aria-current=${page === id ? 'page' : undefined} onClick=${() => go(id)}>${ic}${label}</button>`)}
-        <button class="btn-primary side-add" onClick=${() => openAdd()} disabled=${loading}>${Icon.plus}${t('add_expense')}</button>
+        <button class="btn-primary side-add" onClick=${() => openAdd()} disabled=${readOnly}>${Icon.plus}${t('add_expense')}</button>
         <div class="side-foot">${me ? html`<div class="user-chip"><${Avatar} p=${me} size="sm" /><b>${me.name}</b><button class="lock-btn" onClick=${() => r.lock(false)} title=${t('lock_now')}>${Icon.lock}${t('lock')}</button></div>` : null}<${ThemeSwitch} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
       </nav>
 
@@ -1716,14 +1735,15 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
 
         <div class="page"><div class="page-in">
 
-        ${exampleMode && page !== 'settings' ? html`<div class="banner">
+        ${VIEW_ONLY ? html`<div class="view-pill">${Icon.eye}<span><b>${t('view_t')}</b> ${t('view_p')}</span></div>` : null}
+        ${exampleMode && !VIEW_ONLY && page !== 'settings' ? html`<div class="banner">
           <div class="banner-body"><span class="banner-ic">${Icon.sparkle}</span><${Rich} tag="p" text=${t('ex_banner')} /></div>
           <div class="banner-actions">
             <button class="btn-ghost" onClick=${startEmpty}>${t('ex_clear')}</button>
             <button class="btn-primary" onClick=${keepDemo}>${t('ex_save')}</button>
           </div>
         </div>` : null}
-        ${carry.length && (page === 'home' || page === 'expenses') ? html`<div class="banner">
+        ${carry.length && !VIEW_ONLY && (page === 'home' || page === 'expenses') ? html`<div class="banner">
           <${Rich} tag="p" text=${t('carry_banner', { n: carry.length, m: esc(L(shiftMonth(month, -1))), a: esc(money(sym, sum(carry))) })} />
           <div class="banner-actions"><button class="btn-primary" onClick=${onCarry}>${t('carry_add')}</button></div>
         </div>` : null}
@@ -1735,7 +1755,7 @@ button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
       <nav class="bottom-nav" aria-label="Menu">
         ${[NAV[0], NAV[1], null, NAV[2], NAV[3]].map(n => n
           ? html`<button key=${n[0]} aria-current=${page === n[0] ? 'page' : undefined} onClick=${() => go(n[0])}><span class="ic">${n[2]}</span>${n[1]}</button>`
-          : html`<button key="add" class="nav-add" onClick=${() => openAdd()} disabled=${loading} aria-label=${t('add_expense')}><span class="ic">${Icon.plus}</span>${t('add')}</button>`)}
+          : html`<button key="add" class="nav-add" onClick=${() => openAdd()} disabled=${readOnly} aria-label=${t('add_expense')}><span class="ic">${Icon.plus}</span>${t('add')}</button>`)}
       </nav>
       ${sheet ? html`<${Sheet} init=${sheet} ctx=${ctx} onClose=${() => setSheet(null)} onSave=${onSave} onDelete=${onDelete} />` : null}
       ${toast ? html`<div class="toast" role="status">${toast}</div>` : null}

@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#146B44">
+<meta name="description" content="Rancang perbelanjaan bulanan: bil wajib dan boleh tangguh.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Belanja">
+<style>body{margin:0}body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:#146B44;z-index:100;pointer-events:none}img{max-width:100%}[hidden]{display:none!important}</style>
+<script>window.RB_VIEW_ONLY = true;</script>
+</head>
+<body>
+<title>Rancang Belanja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app shell. Phone = bottom tab bar + floating add button; desktop = left sidebar menu. Home is one ink summary card, three plain figures, one status card, one "to pay" list. */
+:root {
+  --bg: #D8E9DF;
+  --surface: #FFFFFF;
+  --surface-2: #F3F7F4;
+  --line: #D3E0D7;
+  --fg: #12201A;
+  --muted: #5A6B62;
+  --ink: #146B44;
+  --ink-2: #1A8053;
+  --ink-3: #26A066;
+  --ink-fg: #FFFFFF;
+  --ink-muted: #CFEBDB;
+  --accent: #178A52;
+  --accent-fg: #FFFFFF;
+  --nav: #111A15;
+  --nav-fg: #8EA497;
+  --must: #D64545;
+  --defer: #3A80C2;
+  --ok: #1F9A66;
+  --warn: #C98304;
+  --shadow: 0 1px 2px rgba(20,27,45,.06), 0 10px 28px -14px rgba(20,27,45,.22);
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B110E; --surface: #131B17; --surface-2: #1A241F; --line: #27342D;
+    --fg: #E6EEE9; --muted: #9BADA3; --ink: #0E4A30; --ink-2: #135C3B; --ink-3: #1B774B;
+    --ink-fg: #FFFFFF; --ink-muted: #BFDCCB; --accent: #3CC484; --accent-fg: #052014;
+    --nav: #18221D; --nav-fg: #93A79B;
+    --must: #EE6868; --defer: #5EA3E2; --ok: #38C184; --warn: #EDA82B;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B110E; --surface: #131B17; --surface-2: #1A241F; --line: #27342D;
+  --fg: #E6EEE9; --muted: #9BADA3; --ink: #0E4A30; --ink-2: #135C3B; --ink-3: #1B774B;
+  --ink-fg: #FFFFFF; --ink-muted: #BFDCCB; --accent: #3CC484; --accent-fg: #052014;
+  --nav: #18221D; --nav-fg: #93A79B;
+  --must: #EE6868; --defer: #5EA3E2; --ok: #38C184; --warn: #EDA82B;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: radial-gradient(560px 340px at -12% -6%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 70%), radial-gradient(480px 320px at 112% -4%, rgba(242,181,68,.38), transparent 70%), radial-gradient(520px 420px at 50% 120%, color-mix(in srgb, var(--defer) 20%, transparent), transparent 70%), var(--bg); background-attachment: fixed; min-height: 100vh; color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* ---------- shell ---------- */
+.side { display: none; }
+.content { width: 100%; min-width: 0; }
+.top { padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 0; }
+.top-in { max-width: 1120px; margin: 0 auto; display: grid; gap: 14px; }
+.page { padding: 14px 16px 120px; }
+.page-in { max-width: 1120px; margin: 0 auto; display: grid; gap: 14px; align-content: start; }
+@media (min-width: 900px) {
+  .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+  .side { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; height: 100dvh; padding: 22px 14px; background: var(--surface); border-right: 1px solid var(--line); }
+  .top { padding: 26px 28px 0; }
+  .page { padding: 16px 28px 40px; }
+  .top-bar { display: none !important; }
+  .bottom-nav { display: none !important; }
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--ink); display: grid; place-items: center; flex: none; }
+.brand-name { font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -.01em; line-height: 1.1; }
+.side-link { border: 0; background: transparent; display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px; font-weight: 600; color: var(--muted); text-align: left; }
+.side-link:hover { background: var(--surface-2); color: var(--fg); }
+.side-link[aria-current="page"] { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--fg); box-shadow: inset 3px 0 0 var(--accent); }
+.side-add { margin-top: 14px; justify-content: center; }
+.side-foot { margin-top: auto; display: grid; gap: 10px; padding: 0 6px; }
+
+.bottom-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--nav); border-radius: 22px 22px 0 0; display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -8px 24px -12px rgba(0,0,0,.35); }
+.bottom-nav button { border: 0; background: transparent; display: grid; justify-items: center; gap: 3px; padding: 4px 0; font-size: 11px; font-weight: 600; color: var(--nav-fg); min-width: 0; }
+.bottom-nav .ic { width: 44px; height: 28px; border-radius: 999px; display: grid; place-items: center; transition: background .15s, color .15s; }
+.bottom-nav button[aria-current="page"] { color: #fff; }
+.bottom-nav button[aria-current="page"] .ic { color: #4FD592; background: rgba(79,213,146,.14); }
+.bottom-nav .nav-add .ic { width: 56px; height: 56px; margin-top: -30px; border-radius: 50%; color: #fff; background: linear-gradient(150deg, #1E9E5E, #2DBB74); border: 5px solid var(--bg); box-shadow: 0 10px 20px -8px rgba(23,138,82,.7); }
+.bottom-nav .nav-add:active .ic { transform: scale(.94); }
+
+/* ---------- page header ---------- */
+.top-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.top-bar .brand { padding: 0; gap: 8px; min-width: 0; }
+.top-bar .brand-mark { width: 32px; height: 32px; }
+.top-bar .brand-name { font-size: 15px; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-tools { display: flex; gap: 6px; align-items: center; flex: none; }
+.top .theme-cycle { width: 34px; height: 34px; }
+.top .lang button { padding: 5px 9px; }
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.head-text { min-width: 0; flex: 1 1 auto; display: grid; gap: 1px; }
+.hello { font-size: 13.5px; color: var(--muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 25px; line-height: 1.12; letter-spacing: -.015em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-sub { margin: 0; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.head-tools { display: grid; justify-items: end; gap: 4px; flex: none; }
+.today-link { border: 0; background: none; padding: 2px 4px; color: var(--accent); font-weight: 600; font-size: 12px; }
+.month-nav { display: flex; align-items: center; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 4px; box-shadow: 0 1px 2px rgba(20,27,45,.05); }
+.mn-arrow { border: 0; background: var(--surface-2); width: 30px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex: none; }
+.mn-arrow:hover { background: color-mix(in srgb, var(--accent) 16%, var(--surface-2)); color: var(--fg); }
+.month-label { display: flex; align-items: center; gap: 8px; padding: 0 8px; min-width: 108px; }
+.mn-cal { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); flex: none; }
+.mn-text { display: grid; line-height: 1.1; }
+.mn-text b { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.mn-text small { font-size: 11px; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.lang { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.lang button { border: 0; background: transparent; border-radius: 999px; padding: 6px 11px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
+.lang.icons button { padding: 6px 9px; display: grid; place-items: center; }
+.theme-cycle { border: 1px solid var(--line); background: var(--surface); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--fg); }
+.side-foot .lang { justify-content: space-between; }
+.side-foot .lang button { flex: 1; }
+
+/* ---------- common ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: 0 1px 2px rgba(20,27,45,.04); display: grid; gap: 12px; min-width: 0; }
+.card-title { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; text-wrap: pretty; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; font-size: 13.5px; font-family: var(--font-body); }
+.btn-primary { border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; border-radius: 999px; padding: 10px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-ghost { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 13.5px; }
+.btn-ghost:hover { border-color: var(--muted); }
+.btn-danger { border: 1px solid color-mix(in srgb, var(--must) 45%, var(--line)); background: transparent; color: var(--must); border-radius: 999px; padding: 9px 14px; font-weight: 600; font-size: 13.5px; }
+.btn-danger.solid { background: var(--must); color: #fff; border-color: var(--must); }
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; padding: 14px 16px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.banner-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--fg); flex: none; }
+.banner-body { display: flex; gap: 12px; align-items: center; flex: 1 1 300px; min-width: 0; }
+.banner p { margin: 0; font-size: 14px; color: var(--muted); flex: 1 1 260px; }
+.banner strong { color: var(--fg); }
+.banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- home ---------- */
+.hero { background: radial-gradient(520px 220px at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%), linear-gradient(135deg, var(--ink) 0%, var(--ink-3) 100%); color: var(--ink-fg); border-radius: 24px; padding: 24px; display: grid; gap: 14px; position: relative; overflow: hidden; box-shadow: var(--shadow); }
+.hero::after { content: ""; position: absolute; right: 22px; top: 22px; width: 64px; height: 64px; border-radius: 18px; background-color: color-mix(in srgb, var(--ink-fg) 8%, transparent); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='3' y='5' width='18' height='14' rx='3' stroke='%23F2B544' stroke-width='1.6'/%3E%3Cpath d='M3 10h18' stroke='%23F2B544' stroke-width='1.6'/%3E%3Ccircle cx='16.5' cy='14.5' r='1.4' fill='%23F2B544'/%3E%3C/svg%3E"); background-size: 34px; background-repeat: no-repeat; background-position: center; pointer-events: none; }
+@media (max-width: 420px) { .hero::after { width: 48px; height: 48px; background-size: 26px; right: 16px; top: 16px; } }
+.hero > * { position: relative; z-index: 1; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: .09em; color: var(--ink-muted); font-weight: 700; }
+.big { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 11vw, 60px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.big.neg { color: #FF9C9C; }
+.hero-note { margin: 0; color: var(--ink-muted); font-size: 14.5px; max-width: 46ch; }
+.hero-note b { color: var(--ink-fg); }
+.meter { height: 10px; border-radius: 999px; background: color-mix(in srgb, var(--ink-fg) 14%, transparent); overflow: hidden; display: flex; }
+.meter span { height: 100%; transition: width .4s ease; }
+.meter-label { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--ink-muted); }
+
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; transition: border-color .15s, transform .15s; min-width: 0; text-align: left; display: grid; gap: 4px; }
+button.figure:hover { border-color: var(--muted); transform: translateY(-1px); }
+.figure-label { font-size: 12.5px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.figure-value { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.figure-hint { font-size: 11.5px; color: var(--muted); }
+@media (max-width: 420px) { .figure { padding: 10px; } .figure-value { font-size: 14.5px; } .figure-label { font-size: 11.5px; } }
+
+.status { border-left: 0; }
+.status-head { display: flex; align-items: center; gap: 10px; }
+.status-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; color: #fff; font-weight: 800; }
+.status h3 { margin: 0; font-size: 16.5px; font-weight: 700; }
+.status.good { background: color-mix(in srgb, var(--ok) 8%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 40%, var(--line)); }
+.status.warn { background: color-mix(in srgb, var(--warn) 9%, var(--surface)); border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); }
+.status.bad { background: color-mix(in srgb, var(--must) 8%, var(--surface)); border-color: color-mix(in srgb, var(--must) 45%, var(--line)); }
+.status.none { background: var(--surface); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; }
+
+.home-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .home-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; } }
+
+/* home: wallet card, status alert and quick actions */
+.wallet { position: relative; overflow: hidden; isolation: isolate; border-radius: 24px; padding: 18px 18px 16px; color: #fff; display: grid; gap: 3px; min-width: 0; background: radial-gradient(280px 170px at 100% 0%, rgba(242,181,68,.24), transparent 70%), linear-gradient(135deg, #0D241A 0%, #133B2A 58%, #1B5940 100%); box-shadow: 0 18px 32px -20px rgba(8,36,22,.8); }
+.wallet::before { content: ""; position: absolute; inset: 0; z-index: -1; background: repeating-linear-gradient(115deg, rgba(255,255,255,.035) 0 2px, transparent 2px 15px); }
+.w-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.w-lbl { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-mark { width: 34px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: linear-gradient(135deg, #F7D27A, #D9A13A); flex: none; }
+.w-mark i { width: 18px; height: 12px; border-radius: 3px; border: 1.5px solid rgba(60,40,5,.45); }
+.w-amt { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, 10vw, 44px); line-height: 1.05; letter-spacing: -.015em; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.w-amt.neg { color: #FFB4A8; }
+.w-sub { font-size: 12.5px; color: rgba(255,255,255,.72); font-variant-numeric: tabular-nums; }
+.alloc { display: flex; gap: 2px; height: 10px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.12); margin-top: 12px; }
+.alloc span { height: 100%; transition: width .4s ease; }
+.alloc-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 7px; font-size: 11.5px; color: rgba(255,255,255,.82); font-variant-numeric: tabular-nums; }
+.alloc-leg span { display: inline-flex; align-items: center; gap: 5px; }
+.alloc-leg i { width: 8px; height: 8px; border-radius: 3px; }
+.w-actions { display: flex; gap: 8px; margin-top: 12px; }
+.w-btn { flex: 1; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; border-radius: 12px; padding: 9px 10px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.w-btn:hover { background: rgba(255,255,255,.14); }
+.w-btn.main { background: #F2B544; border-color: transparent; color: #1B1405; }
+.w-btn.main:hover { filter: brightness(1.05); }
+.w-btn svg { width: 15px; height: 15px; }
+.alert { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ac); text-align: left; color: var(--fg); }
+.alert.good { --ac: var(--ok); } .alert.warn { --ac: var(--warn); } .alert.bad { --ac: var(--must); } .alert.none { --ac: var(--muted); }
+.alert-ic { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; color: var(--ac); background: color-mix(in srgb, var(--ac) 15%, transparent); }
+.alert-txt { display: grid; min-width: 0; line-height: 1.25; }
+.alert-txt b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert-txt small { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alert > svg { color: var(--muted); }
+.badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; color: #fff; }
+.badge.late { background: #E5484D; }
+.badge.soon { background: #D98A07; }
+.quick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 6px 10px; }
+.quick button { border: 0; background: none; color: var(--fg); display: grid; justify-items: center; gap: 6px; padding: 0; font-size: 11.5px; font-weight: 600; min-width: 0; position: relative; }
+.quick button span.q { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; color: var(--qc); background: color-mix(in srgb, var(--qc) 14%, transparent); transition: transform .15s, background .15s; }
+.quick button:hover span.q { background: color-mix(in srgb, var(--qc) 22%, transparent); }
+.quick button:active span.q { transform: scale(.93); }
+.quick button:disabled { opacity: .45; }
+.quick button em { font-style: normal; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quick .cnt { position: absolute; top: -5px; left: calc(50% + 13px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #F2B544; color: #1B1405; font-size: 10.5px; font-weight: 800; display: grid; place-items: center; }
+@media (min-width: 900px) {
+  .hx-wrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+  .hx-side { display: grid; gap: 14px; align-content: space-between; }
+}
+@media (max-width: 360px) { .quick button span.q { width: 40px; height: 40px; } .quick button { font-size: 10.5px; } }
+
+/* home: section heads and colour tiles on the light panel */
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 2px 2px -4px; }
+.sec-head h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 18px; letter-spacing: -.01em; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stack, .hx-wrap, .hx-side { display: grid; gap: 12px; min-width: 0; align-content: start; }
+@media (min-width: 900px) { .hx-side { grid-template-rows: auto 1fr; align-content: stretch; } .hx-side .quick { align-content: center; } }
+.bottom-nav .nav-add svg { width: 24px; height: 24px; }
+.tile { border: 0; border-radius: 20px; padding: 14px 16px; color: #fff; text-align: left; display: grid; gap: 3px; position: relative; overflow: hidden; min-width: 0; box-shadow: 0 10px 22px -16px rgba(0,0,0,.6); transition: transform .15s; }
+.tile:hover { transform: translateY(-1px); }
+.tile.must { background: linear-gradient(140deg, #C23A3A, #E2654F); }
+.tile.defer { background: linear-gradient(140deg, #2C68A8, #4A92D6); }
+.tile::after { content: ""; position: absolute; right: -26px; top: -26px; width: 96px; height: 96px; border-radius: 50%; border: 16px solid rgba(255,255,255,.1); }
+.tile-ic { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.2); margin-bottom: 4px; }
+.tile-lbl { font-size: 12.5px; font-weight: 700; opacity: .92; }
+.tile-amt { font-family: var(--font-display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile-sub { font-size: 11.5px; opacity: .88; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile-bar { height: 5px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; margin-top: 6px; }
+.tile-bar span { display: block; height: 100%; background: #fff; border-radius: 999px; }
+
+/* ---------- lists ---------- */
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; }
+.row:hover { background: var(--surface-2); }
+.check { width: 30px; height: 30px; position: relative; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); display: grid; place-items: center; padding: 0; flex: none; transition: background .15s, border-color .15s; }
+.check::before { content: ""; position: absolute; inset: -8px; }
+.check:hover:not(:disabled) { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, var(--surface)); }
+.check:active { transform: scale(.92); }
+.check[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); }
+.row-main { border: 0; background: transparent; text-align: left; padding: 0; min-width: 0; display: grid; gap: 1px; }
+.row-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-meta { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row.is-paid .row-name { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.row-end { display: grid; justify-items: end; gap: 4px; }
+.amt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row.is-paid .amt { color: var(--muted); font-weight: 600; }
+.row-tags { display: flex; gap: 6px; align-items: center; }
+.pill { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill-paid { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+.pill-late { background: color-mix(in srgb, var(--must) 15%, transparent); color: var(--must); }
+.pill-soon { background: color-mix(in srgb, var(--warn) 17%, transparent); color: var(--warn); }
+.pill-upcoming, .pill-none { background: var(--surface-2); color: var(--muted); }
+.defer-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; color: var(--defer); white-space: nowrap; }
+.defer-btn:hover { border-color: var(--defer); }
+.empty { padding: 22px 12px; text-align: center; color: var(--muted); font-size: 14px; }
+
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 4px; gap: 4px; }
+.tabs button { border: 0; background: transparent; border-radius: 10px; padding: 10px 8px; font-weight: 700; font-size: 14px; color: var(--muted); display: grid; gap: 2px; justify-items: center; }
+.tabs button span.t { display: flex; align-items: center; gap: 7px; }
+.tabs button small { font-weight: 600; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tabs button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); box-shadow: inset 0 0 0 1px var(--line); }
+.search { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 11px 14px; font-size: 15px; }
+.list-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.progress { height: 6px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.progress span { display: block; height: 100%; border-radius: 999px; transition: width .4s ease; }
+.view-pill { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); font-size: 13px; color: var(--muted); }
+.view-pill svg { color: var(--accent); flex: none; }
+.view-pill b { color: var(--fg); }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); padding: 0 4px; }
+.pager-btns { display: flex; gap: 6px; }
+.pager .mn-arrow { background: var(--surface-2); color: var(--fg); border: 1px solid var(--line); height: 34px; width: 34px; }
+.pager .mn-arrow:disabled { opacity: .4; }
+.add-inline { width: 100%; border: 1px dashed var(--line); background: transparent; border-radius: 12px; padding: 10px; color: var(--muted); font-weight: 600; font-size: 14px; }
+.add-inline:hover { color: var(--fg); border-color: var(--muted); }
+
+/* ---------- reports ---------- */
+.report-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .report-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.trend { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; align-items: end; height: 190px; padding-top: 18px; border-bottom: 1px solid var(--line); background-image: linear-gradient(var(--line) 1px, transparent 1px); background-size: 100% 25%; background-position: 0 18px; }
+.tcol { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; height: 100%; gap: 0; position: relative; }
+.tcol .tval { font-size: 11px; font-weight: 700; text-align: center; color: var(--muted); margin-bottom: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tcol .stack { display: flex; flex-direction: column-reverse; border-radius: 6px 6px 0 0; overflow: hidden; }
+.tcol.cur .tval { color: var(--fg); }
+.tlabels { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--muted); text-align: center; }
+.tlabels .cur { color: var(--fg); font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.cat-row { display: grid; gap: 5px; }
+.cat-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.cat-top span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-bar { height: 8px; background: var(--surface-2); border-radius: 999px; display: flex; overflow: hidden; }
+.cat-bar span { height: 100%; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------- settings ---------- */
+.set-list { display: grid; gap: 14px; }
+.set-row { display: flex; justify-content: space-between; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+.set-row > div:first-child { flex: 1 1 220px; min-width: 0; }
+.set-row h3 { margin: 0; font-size: 15.5px; font-weight: 700; }
+.set-row p { margin: 2px 0 0; }
+.select, .input { border: 1px solid var(--line); background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 16px; }
+.inline-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.inline-form .input { width: 160px; }
+.lang-big { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-width: 240px; }
+.lang-big button { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-weight: 700; text-align: left; display: grid; }
+.lang-big button small { font-weight: 500; color: var(--muted); font-size: 12px; }
+.lang-big.three { grid-template-columns: repeat(3, 1fr); }
+.lang-big button span.bi { display: flex; align-items: center; gap: 8px; }
+.lang-big button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+@media (max-width: 420px) { .lang-big { min-width: 0; width: 100%; } }
+.divider { height: 1px; background: var(--line); }
+
+/* ---------- lock screen ---------- */
+.gate { position: relative; isolation: isolate; min-height: 100vh; min-height: 100dvh; padding-inline: 16px; padding-block: calc(env(safe-area-inset-top, 0px) + clamp(20px, 8vh, 88px)) 32px; background-image: radial-gradient(640px 320px at 50% -70px, color-mix(in srgb, var(--accent) 20%, transparent), transparent 72%), radial-gradient(520px 420px at -10% 100%, color-mix(in srgb, var(--defer) 16%, transparent), transparent 70%), radial-gradient(460px 360px at 112% 70%, color-mix(in srgb, var(--ok) 12%, transparent), transparent 70%); }
+.gate::before { content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; background-image: radial-gradient(color-mix(in srgb, var(--fg) 11%, transparent) 1px, transparent 1.4px); background-size: 22px 22px; -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 80%); mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 80%); }
+.gate-art { position: fixed; left: 0; right: 0; bottom: 0; height: clamp(170px, 30vh, 320px); z-index: -1; pointer-events: none; }
+.gate-art svg { display: block; width: 100%; height: 100%; }
+@media (min-width: 700px) { .gate-art { left: 50%; right: auto; width: 640px; height: 366px; transform: translateX(-50%); -webkit-mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(to right, transparent, #000 20%, #000 80%, transparent); } }
+.art-hill-a { fill: color-mix(in srgb, var(--defer) 15%, transparent); }
+.art-hill-b { fill: color-mix(in srgb, var(--ok) 15%, transparent); }
+.art-hill-c { fill: color-mix(in srgb, var(--ink-3) 30%, transparent); }
+.art-bar { fill: color-mix(in srgb, var(--accent) 38%, transparent); }
+.art-bar.dim { fill: color-mix(in srgb, var(--accent) 22%, transparent); }
+.art-coin { fill: color-mix(in srgb, var(--accent) 55%, transparent); stroke: color-mix(in srgb, var(--accent) 80%, transparent); stroke-width: 2; }
+.art-coin-in { fill: none; stroke: color-mix(in srgb, var(--accent-fg) 40%, transparent); stroke-width: 2; }
+.art-line { fill: none; stroke: color-mix(in srgb, var(--accent) 70%, transparent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 9; }
+.gate-inner { position: relative; z-index: 1; }
+.gate-inner { width: 100%; max-width: 460px; margin: 0 auto; display: grid; gap: 18px; align-content: start; }
+.gate-hero { padding: 26px 22px 24px; gap: 8px; }
+.gate-hero h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 8vw, 34px); line-height: 1.05; letter-spacing: -.02em; text-wrap: balance; color: var(--ink-fg); max-width: 14ch; }
+.gate-hero p { margin: 4px 0 0; color: var(--ink-muted); font-size: 15px; max-width: 30ch; text-wrap: pretty; }
+.who-list { display: grid; gap: 10px; }
+.who-row { border: 1px solid var(--line); background: var(--surface); border-radius: 22px; padding: 14px 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; text-align: left; box-shadow: 0 1px 2px rgba(20,27,45,.05); transition: border-color .15s, transform .15s, box-shadow .15s; min-width: 0; }
+.who-row:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
+.who-row:active { transform: scale(.985); }
+.who-name { display: grid; gap: 1px; min-width: 0; }
+.who-name b { font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who-name small { color: var(--muted); font-size: 13px; font-weight: 500; }
+.who-go { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 22%, transparent); color: var(--fg); }
+.gate-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 26px 14px 22px; box-shadow: var(--shadow); }
+.gate-foot { margin: 6px 0 0; display: flex; align-items: flex-start; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; text-align: center; text-wrap: pretty; }
+.gate-foot svg { flex: none; margin-top: 2px; }
+.gate-foot span { max-width: 34ch; }
+.gate-card { width: 100%; max-width: 460px; display: grid; gap: 22px; }
+.gate-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.gate-top .brand { padding: 0; }
+.gate-head { display: grid; gap: 6px; text-align: center; }
+.gate-head h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 28px; letter-spacing: -.015em; text-wrap: balance; }
+.gate-head p { margin: 0; color: var(--muted); font-size: 15px; text-wrap: pretty; }
+.who { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.who button { border: 1px solid var(--line); background: var(--surface); border-radius: 22px; padding: 22px 12px 18px; display: grid; justify-items: center; gap: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 1px 2px rgba(20,27,45,.05); transition: border-color .15s, transform .15s; min-width: 0; }
+.who button span.nm { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who button:hover { border-color: var(--accent); transform: translateY(-2px); }
+.avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 26px; flex: none; }
+.avatar.sm { width: 32px; height: 32px; font-size: 14px; }
+.avatar.lg { width: 56px; height: 56px; font-size: 24px; }
+.avatar.md { width: 72px; height: 72px; font-size: 30px; }
+.pin-who { display: grid; justify-items: center; gap: 10px; }
+.pin-who b { font-size: 18px; }
+.pin-dots { display: flex; justify-content: center; gap: 14px; height: 18px; }
+.pin-dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); transition: background .12s, border-color .12s; }
+.pin-dots i.on { background: var(--fg); border-color: var(--fg); }
+.pin-dots.bad i { border-color: var(--must); }
+.pin-dots.bad i.on { background: var(--must); }
+.shake { animation: shake .35s ease; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.pin-msg { min-height: 21px; margin: 0; text-align: center; color: var(--must); font-size: 14px; font-weight: 600; }
+.keypad { display: grid; grid-template-columns: repeat(3, 74px); gap: 14px 24px; justify-content: center; }
+.keypad button { width: 74px; height: 74px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-family: var(--font-display); font-size: 27px; font-weight: 600; display: grid; place-items: center; transition: background .1s, transform .1s; }
+.keypad button:active:not(:disabled) { background: var(--surface-2); transform: scale(.94); }
+.keypad button.ghost { border: 0; background: transparent; font-family: var(--font-body); font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.gate-link { justify-self: center; border: 0; background: none; color: var(--defer); font-weight: 600; font-size: 14px; padding: 6px 10px; }
+.setup-row { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.setup-row-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.setup-row-head b { display: flex; align-items: center; gap: 10px; }
+.setup-row .field .input { width: 100%; }
+.setup-list { display: grid; gap: 12px; }
+.user-chip { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+.user-chip b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.lock-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px; color: var(--fg); }
+.lock-btn:hover { border-color: var(--muted); }
+.me-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px; display: grid; place-items: center; }
+.sub-form { display: grid; gap: 10px; padding: 14px; border-radius: 14px; background: var(--surface-2); }
+.sub-form .two .input, .sub-form .input { width: 100%; }
+.sub-form .form-err { margin: 0; }
+@media (max-width: 380px) { .keypad { grid-template-columns: repeat(3, 66px); gap: 12px 20px; } .keypad button { width: 66px; height: 66px; font-size: 24px; } }
+
+/* ---------- sheet ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(8,12,24,.5); z-index: 50; display: flex; align-items: flex-end; justify-content: center; animation: fade .15s ease; }
+@media (min-width: 640px) { .scrim { align-items: center; padding: 24px; } }
+.sheet { background: var(--surface); width: 100%; max-width: 520px; max-height: 92vh; overflow-y: auto; border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 15px; animation: rise .2s ease; }
+@media (min-width: 640px) { .sheet { border-radius: 22px; } }
+.sheet h2 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.icon-btn { border: 0; background: var(--surface-2); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); }
+.field { display: grid; gap: 6px; }
+.field label, .field .label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.field .input { width: 100%; }
+.input:focus, .select:focus, .search:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.prio { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.prio label { border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 2px; cursor: pointer; background: var(--surface-2); position: relative; }
+.prio input { position: absolute; opacity: 0; pointer-events: none; }
+.prio b { display: flex; align-items: center; gap: 6px; color: var(--fg); font-size: 14.5px; }
+.prio small { color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1.35; }
+.prio label.on-must { border-color: var(--must); background: color-mix(in srgb, var(--must) 8%, var(--surface)); }
+.prio label.on-defer { border-color: var(--defer); background: color-mix(in srgb, var(--defer) 8%, var(--surface)); }
+.prio label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check-line { display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 500; }
+.check-line input { width: 18px; height: 18px; accent-color: var(--ok); }
+.form-err { color: var(--must); font-size: 13.5px; font-weight: 600; margin: 0; }
+.sheet-actions { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; align-items: center; }
+.sheet-actions .right { display: flex; gap: 8px; margin-left: auto; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(100px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--ink-fg); padding: 10px 16px; border-radius: 12px; font-size: 14px; box-shadow: var(--shadow); max-width: calc(100% - 32px); animation: fade .2s ease; }
+@media (min-width: 900px) { .toast { bottom: 24px; } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(16px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 420px) { .month-label { min-width: 0; padding: 0 6px; gap: 6px; } .mn-cal { display: none; } .mn-text b { font-size: 13.5px; } .hero { padding: 18px; } .page-title { font-size: 22px; } .page-sub { font-size: 12.5px; } }
+/* ---------- depth and motion (all switched off by prefers-reduced-motion above) ---------- */
+:root { --lift: 0 1px 2px rgba(16,40,28,.06), 0 14px 30px -18px rgba(16,40,28,.38); --lift-hi: 0 2px 4px rgba(16,40,28,.08), 0 22px 40px -20px rgba(16,40,28,.5); }
+:root[data-theme="dark"] { --lift: 0 1px 2px rgba(0,0,0,.4), 0 14px 30px -18px rgba(0,0,0,.8); --lift-hi: 0 2px 4px rgba(0,0,0,.5), 0 22px 40px -18px rgba(0,0,0,.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lift: 0 1px 2px rgba(0,0,0,.4), 0 14px 30px -18px rgba(0,0,0,.8); --lift-hi: 0 2px 4px rgba(0,0,0,.5), 0 22px 40px -18px rgba(0,0,0,.9); } }
+.card, .quick, .tabs, .month-nav, .who-row, .gate-panel { box-shadow: var(--lift); }
+.alert { box-shadow: var(--lift); transition: transform .2s ease, box-shadow .2s ease; }
+.alert:hover { transform: translateY(-2px); box-shadow: var(--lift-hi); }
+.quick button span.q { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 6px 14px -10px var(--qc); }
+.quick button:hover span.q { transform: translateY(-3px); }
+
+.wallet > * { position: relative; z-index: 1; }
+.wallet { box-shadow: 0 2px 4px rgba(8,36,22,.2), 0 26px 44px -22px rgba(8,36,22,.85), inset 0 1px 0 rgba(255,255,255,.08); }
+.wallet::after { content: ""; position: absolute; top: -50%; bottom: -50%; left: -60%; width: 38%; z-index: 0; pointer-events: none; transform: rotate(18deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.13), transparent); animation: sheen 6.5s ease-in-out 1.2s infinite; }
+@keyframes sheen { 0% { left: -60%; } 45%, 100% { left: 140%; } }
+.w-mark { background: linear-gradient(110deg, #D9A13A 0%, #F7D27A 35%, #FFF1C4 50%, #F7D27A 65%, #D9A13A 100%); background-size: 250% 100%; animation: gold 4s linear infinite; box-shadow: 0 4px 10px -4px rgba(217,161,58,.7); }
+@keyframes gold { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+.tile { transition: transform .2s ease, box-shadow .2s ease; }
+.tile::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(160deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,0) 42%); }
+.tile.must { box-shadow: 0 16px 28px -16px rgba(194,58,58,.75), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile.defer { box-shadow: 0 16px 28px -16px rgba(44,104,168,.75), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile:hover { transform: translateY(-3px); }
+
+.alloc span, .tile-bar span, .progress span, .cat-bar span { transform-origin: left center; animation: grow 1s cubic-bezier(.2,.8,.2,1) .2s backwards; }
+@keyframes grow { from { transform: scaleX(0); } }
+
+.page-in > *, .hx-wrap > *, .hx-side > * { animation: rise-in .55s cubic-bezier(.2,.8,.2,1) backwards; }
+.page-in > :nth-child(2), .hx-side > :nth-child(1) { animation-delay: .06s; }
+.page-in > :nth-child(3), .hx-side > :nth-child(2) { animation-delay: .12s; }
+.page-in > :nth-child(4) { animation-delay: .18s; }
+.page-in > :nth-child(n+5) { animation-delay: .24s; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px); } }
+
+.bottom-nav .nav-add .ic { position: relative; }
+.bottom-nav .nav-add .ic::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none; animation: pulse 2.6s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(45,187,116,.5); } 70%, 100% { box-shadow: 0 0 0 14px rgba(45,187,116,0); } }
+.badge.late { animation: alarm 2s ease-in-out infinite; }
+@keyframes alarm { 0%, 100% { box-shadow: 0 0 0 0 rgba(229,72,77,.55); } 50% { box-shadow: 0 0 0 5px rgba(229,72,77,0); } }
+</style>
+
+<div id="root">
+  <div class="content"><div class="hero"><div class="eyebrow">Rancang Belanja</div><p class="hero-note">Memuatkan perbelanjaan anda…</p></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function () {
+  const { useState, useEffect, useMemo, useRef } = React;
+  const html = htm.bind(React.createElement);
+
+  // ---------- language ----------
+  const DICT = {
+    ms: {
+      nav_home: 'Utama', nav_exp: 'Perbelanjaan', nav_rep: 'Laporan', nav_set: 'Tetapan',
+      n_items: '{n} item', add: 'Tambah', add_expense: 'Tambah perbelanjaan', loading: 'Memuatkan perbelanjaan anda…',
+      prev_month: 'Bulan sebelum', next_month: 'Bulan seterusnya', this_month: 'Bulan ini',
+      home_sub: 'Ringkasan kewangan bulanan anda',
+      left_after: 'Baki selepas bil wajib',
+      hero_noincome: 'Masukkan <b>pendapatan bulanan</b> anda untuk melihat baki.',
+      hero_bad: 'Bil wajib melebihi pendapatan sebanyak <b>{a}</b>.',
+      hero_warn: 'Bil wajib selamat. Tangguhkan <b>{a}</b> untuk kekal dalam bajet.',
+      hero_good: 'Semua perbelanjaan muat dalam bajet. Lebihan <b>{a}</b>.',
+      paid_of: '{a} daripada {b} sudah dibayar',
+      income: 'Pendapatan', must: 'Wajib bayar', defer: 'Boleh tangguh', tap_edit: 'Ketik untuk ubah', set_income: 'Tetapkan',
+      st_none_t: 'Tetapkan pendapatan anda', st_none_p: 'Kami perlukan pendapatan bulan ini untuk menilai bajet anda.',
+      st_good_t: 'Bajet anda seimbang', st_good_p: 'Semua perbelanjaan boleh dibayar. Pertimbangkan untuk simpan lebihan {a}.',
+      st_warn_t: 'Tangguhkan beberapa perbelanjaan', st_warn_p: 'Anda terlebih {a}. Pindahkan item ini ke {m}:',
+      st_bad_t: 'Pendapatan tidak cukup untuk bil wajib', st_bad_p: 'Anda terlebih {a}. Tangguhkan semua yang boleh, kemudian semak bil wajib yang terbesar.',
+      st_short: 'Masih kurang {a} selepas ditangguhkan.',
+      move_n: 'Pindahkan ke {m}', go_settings: 'Buka Tetapan',
+      to_pay: 'Perlu dibayar', see_all: 'Lihat semua', all_paid: 'Semua bil wajib bulan ini sudah dibayar.',
+      no_must: 'Tiada bil wajib lagi. Tambah sewa, pinjaman atau utiliti.',
+      exp_sub: 'Semua bil dan perbelanjaan anda', search: 'Cari perbelanjaan…',
+      must_desc: 'Bil yang ada denda atau kesan jika lewat', defer_desc: 'Perbelanjaan yang boleh tunggu sebulan',
+      list_paid: '{a} sudah dibayar', list_left: '{a} belum dibayar',
+      empty_must: 'Tiada bil wajib untuk bulan ini.', empty_defer: 'Tiada perbelanjaan boleh tangguh untuk bulan ini.', empty_search: 'Tiada padanan untuk carian ini.',
+      add_must: '+ Tambah bil wajib', add_defer: '+ Tambah perbelanjaan boleh tangguh',
+      move_to: 'Ke {m}', every_month: 'Setiap bulan', one_off: 'Sekali sahaja',
+      paid: 'Dibayar', anytime: 'Bila-bila', overdue: 'Lewat', overdue_d: 'Lewat {d} hari', due_today: 'Hari ini', due_in: '{d} hari lagi', due_on: '{d} {m}',
+      mark_paid: 'Tandakan dibayar: ', mark_unpaid: 'Tandakan belum dibayar: ', edit: 'Ubah ',
+      rep_sub: 'Analisis perbelanjaan anda', trend: 'Trend 6 bulan', by_cat: 'Mengikut kategori', month_sum: 'Ringkasan bulan',
+      total_spend: 'Jumlah perbelanjaan', paid_total: 'Sudah dibayar', unpaid_total: 'Belum dibayar', balance: 'Baki akhir', no_data: 'Tiada data untuk bulan ini.',
+      set_sub: 'Bahasa, mata wang dan data anda', lang_t: 'Bahasa', lang_p: 'Pilih bahasa paparan aplikasi.',
+      cur_t: 'Mata wang', cur_p: 'Simbol yang dipaparkan pada semua jumlah.',
+      inc_t: 'Pendapatan {m}', inc_p: 'Bulan seterusnya menggunakan jumlah yang sama sehingga anda mengubahnya.', save: 'Simpan',
+      carry_t: 'Item berulang', carry_p: '{n} item berulang dari {m} belum ada dalam bulan ini.', carry_none: 'Semua item berulang sudah ada dalam bulan ini.', carry_btn: 'Salin ke bulan ini',
+      clear_t: 'Padam perbelanjaan bulan ini', clear_p: 'Memadam {n} item dalam {m}. Tindakan ini tidak boleh dibatalkan.', clear_btn: 'Padam', clear_yes: 'Ya, padam semua', cancel: 'Batal',
+      store_db: 'Disimpan secara peribadi dalam akaun anda. Hanya anda boleh melihatnya.', store_local: 'Disimpan dalam pelayar ini sahaja.', connecting: 'Menyambung…',
+      ex_banner: '<strong>Mod contoh.</strong> Cuba semua fungsi: tandakan dibayar, tangguh atau ubah item. Perubahan belum disimpan.',
+      ex_save: 'Simpan sebagai data saya', ex_clear: 'Mula senarai kosong',
+      t_demo_saved: 'Contoh disimpan sebagai data anda.', t_demo_cleared: 'Senarai kosong sedia. Tambah perbelanjaan pertama anda.',
+      theme_t: 'Tema paparan', theme_p: 'Cerah, gelap, atau ikut tetapan peranti.', th_system: 'Sistem', th_light: 'Cerah', th_dark: 'Gelap',
+      gate_who: 'Siapa yang guna?', gate_sub: 'Pilih nama anda, kemudian masukkan PIN.', gate_tap: 'Ketik untuk masuk', gate_foot: 'Setiap profil ada PIN sendiri. Data anda tidak dikongsi dengan profil lain.',
+      greet_1: 'Selamat pagi', greet_2: 'Selamat tengah hari', greet_3: 'Selamat petang', greet_4: 'Selamat malam',
+      pin_enter: 'Masukkan PIN anda', pin_wrong: 'PIN salah. {n} cubaan lagi.', pin_locked: 'Terlalu banyak cubaan. Cuba lagi dalam {n} minit.',
+      pin_net: 'Tidak dapat menyambung ke pelayan. Semak sambungan dan cuba lagi.', switch_user: 'Tukar pengguna', del_digit: 'Padam', pin_ok: 'OK',
+      setup_t: 'Sediakan profil', setup_p: 'Buat satu profil untuk setiap orang. Setiap profil ada PIN sendiri dan hanya boleh melihat datanya sendiri.',
+      setup_person: 'Orang {n}', setup_name: 'Nama', setup_ph1: 'cth. Saya', setup_ph2: 'cth. Mak', setup_ph: 'cth. Ayah',
+      setup_pin: 'PIN (4 hingga 6 nombor)', setup_pin2: 'Ulang PIN', setup_add: '+ Tambah orang', setup_remove: 'Buang', setup_go: 'Simpan dan mula',
+      e_setup_name: 'Setiap profil perlukan nama.', e_setup_pin: 'PIN mestilah 4 hingga 6 nombor.', e_setup_match: 'PIN ulangan tidak sama.', e_setup_dupe: 'Setiap profil perlu nama yang berbeza.', e_setup_local: 'Profil pertama mesti dibuat di rangkaian rumah, iaitu di http://localhost:8088 pada komputer yang menjalankan aplikasi.',
+      lock: 'Kunci', prof_t: 'Profil & keselamatan', prof_p: 'Anda sedang menggunakan profil {n}.',
+      prof_name: 'Nama profil', pin_change: 'Tukar PIN', pin_cur: 'PIN semasa', pin_new: 'PIN baharu', pin_new2: 'Ulang PIN baharu',
+      prof_add: 'Tambah profil baharu', prof_add_p: 'Untuk ahli keluarga lain, maksimum 6 profil.', lock_now: 'Kunci sekarang', lock_p: 'Aplikasi juga dikunci sendiri selepas 15 minit tidak digunakan.',
+      t_pin_changed: 'PIN ditukar. Peranti lain untuk profil ini telah dilog keluar.', t_renamed: 'Nama dikemas kini.', t_prof_added: 'Profil {n} ditambah.', t_expired: 'Sesi tamat. Sila masukkan PIN semula.', t_locked: 'Aplikasi dikunci.',
+      e_pin_cur: 'PIN semasa salah.', e_too_many: 'Sudah ada 6 profil, iaitu had maksimum.',
+      store_server: 'Disimpan di pelayan rumah anda, dalam profil {n}. Dilindungi PIN.',
+      carry_banner: '<strong>{n} item berulang</strong> dari {m} belum ditambah ({a}).', carry_add: 'Tambah sekarang',
+      sheet_new: 'Tambah perbelanjaan', sheet_edit: 'Ubah perbelanjaan', type: 'Jenis',
+      must_ex: 'Sewa, pinjaman, utiliti, takaful', defer_ex: 'Kehendak yang boleh tunggu',
+      f_name: 'Nama', f_name_ph: 'cth. Bil elektrik', f_amount: 'Jumlah ({s})', f_due: 'Tarikh akhir (hari)', f_due_ph: 'Pilihan',
+      f_cat: 'Kategori', f_note: 'Catatan', f_note_ph: 'Pilihan, cth. nombor akaun', f_rec: 'Berulang setiap bulan',
+      e_name: 'Sila masukkan nama perbelanjaan.', e_amount: 'Masukkan jumlah lebih daripada sifar.', e_due: 'Tarikh akhir mestilah 1 hingga 31, atau biarkan kosong.',
+      delete: 'Padam', delete_yes: 'Ya, padam', save_changes: 'Simpan', add_to: 'Tambah ke {m}', close: 'Tutup',
+      t_saved: 'Disimpan.', t_added: '{n} ditambah.', t_deleted: '{n} dipadam.', t_moved: '{n} dipindahkan ke {m}.', t_moved_n: '{n} item dipindahkan ke {m}.',
+      t_income: 'Pendapatan {m} disimpan.', t_carry: '{n} item berulang ditambah.', t_ex: 'Contoh disalin. Ubah atau padam yang tidak berkaitan.', t_cleared: 'Perbelanjaan {m} dipadam.',
+      err_perm: 'Perubahan tidak dapat disimpan. Anda mungkin hanya ada akses lihat.', err_quota: 'Storan penuh. Padam beberapa perbelanjaan lama dan cuba lagi.',
+      err_gone: 'Penyimpanan tidak lagi tersedia. Muat semula halaman.', err_net: 'Tidak dapat menyimpan. Semak sambungan internet dan cuba lagi.',
+      hx_paid: 'Wajib dibayar', hx_of: 'Daripada pendapatan {a}', badge_late: '{n} lewat', badge_soon: '{n} hampir', tile_sub: '{n} item · {p}% dibayar',
+      q_must: 'Wajib', q_defer: 'Tangguh', q_inc: 'Pendapatan', q_copy: 'Salin', q_rep: 'Laporan', welcome: 'Selamat datang', view_t: 'Paparan demo.', view_p: 'Data contoh sahaja, tidak boleh diubah.', w_left: 'Baki', w_short: 'Kurang {a}',
+      showing: 'Menunjukkan {a}–{b} daripada {n}', prev_page: 'Halaman sebelum', next_page: 'Halaman seterusnya'
+    },
+    en: {
+      nav_home: 'Home', nav_exp: 'Expenses', nav_rep: 'Reports', nav_set: 'Settings',
+      n_items: '{n} items', add: 'Add', add_expense: 'Add expense', loading: 'Loading your expenses…',
+      prev_month: 'Previous month', next_month: 'Next month', this_month: 'This month',
+      home_sub: 'Your monthly money overview',
+      left_after: 'Left after must-pay bills',
+      hero_noincome: 'Enter your <b>monthly income</b> to see what is left.',
+      hero_bad: 'Must-pay bills are <b>{a}</b> more than your income.',
+      hero_warn: 'Essentials are covered. Defer <b>{a}</b> to stay on budget.',
+      hero_good: 'Everything fits your budget, with <b>{a}</b> to spare.',
+      paid_of: '{a} of {b} paid',
+      income: 'Income', must: 'Must pay', defer: 'Can defer', tap_edit: 'Tap to change', set_income: 'Set income',
+      st_none_t: 'Set your income', st_none_p: 'Add this month’s income so the planner can check your budget.',
+      st_good_t: 'Your budget balances', st_good_p: 'Everything can be paid. Consider saving the {a} left over.',
+      st_warn_t: 'Defer a few things', st_warn_p: 'You are {a} over. Move these to {m}:',
+      st_bad_t: 'Income does not cover must-pay bills', st_bad_p: 'You are {a} over. Defer everything you can, then review your largest bill.',
+      st_short: 'Still {a} short after deferring.',
+      move_n: 'Move to {m}', go_settings: 'Open Settings',
+      to_pay: 'Still to pay', see_all: 'See all', all_paid: 'All must-pay bills for this month are paid.',
+      no_must: 'No must-pay bills yet. Add rent, loans or utilities.',
+      exp_sub: 'All your bills and spending', search: 'Search expenses…',
+      must_desc: 'Bills with a penalty or real harm if late', defer_desc: 'Spending that can wait a month',
+      list_paid: '{a} paid', list_left: '{a} to go',
+      empty_must: 'No must-pay bills this month.', empty_defer: 'Nothing to defer this month.', empty_search: 'Nothing matches this search.',
+      add_must: '+ Add a must-pay bill', add_defer: '+ Add something that can wait',
+      move_to: 'To {m}', every_month: 'Every month', one_off: 'One-off',
+      paid: 'Paid', anytime: 'Anytime', overdue: 'Overdue', overdue_d: 'Overdue {d}d', due_today: 'Due today', due_in: 'In {d} days', due_on: '{d} {m}',
+      mark_paid: 'Mark as paid: ', mark_unpaid: 'Mark as unpaid: ', edit: 'Edit ',
+      rep_sub: 'Your spending analysis', trend: '6-month trend', by_cat: 'By category', month_sum: 'Month summary',
+      total_spend: 'Total spending', paid_total: 'Paid', unpaid_total: 'Unpaid', balance: 'Final balance', no_data: 'No data for this month.',
+      set_sub: 'Language, currency and your data', lang_t: 'Language', lang_p: 'Choose the app’s display language.',
+      cur_t: 'Currency', cur_p: 'The symbol shown on every amount.',
+      inc_t: 'Income for {m}', inc_p: 'Later months use the same amount until you change it.', save: 'Save',
+      carry_t: 'Recurring items', carry_p: '{n} recurring items from {m} are not in this month yet.', carry_none: 'All recurring items are already in this month.', carry_btn: 'Copy to this month',
+      clear_t: 'Delete this month’s expenses', clear_p: 'Deletes {n} items in {m}. This cannot be undone.', clear_btn: 'Delete', clear_yes: 'Yes, delete all', cancel: 'Cancel',
+      store_db: 'Saved privately to your account. Only you can see it.', store_local: 'Saved in this browser only.', connecting: 'Connecting…',
+      ex_banner: '<strong>Example mode.</strong> Try everything: tick items as paid, defer or edit them. Changes are not saved yet.',
+      ex_save: 'Keep as my data', ex_clear: 'Start with an empty list',
+      t_demo_saved: 'Examples saved as your data.', t_demo_cleared: 'Empty list ready. Add your first expense.',
+      theme_t: 'Appearance', theme_p: 'Light, dark, or follow your device.', th_system: 'System', th_light: 'Light', th_dark: 'Dark',
+      gate_who: 'Who’s using the app?', gate_sub: 'Choose your name, then enter your PIN.', gate_tap: 'Tap to sign in', gate_foot: 'Every profile has its own PIN. Your data is never shared with other profiles.',
+      greet_1: 'Good morning', greet_2: 'Good afternoon', greet_3: 'Good evening', greet_4: 'Good night',
+      pin_enter: 'Enter your PIN', pin_wrong: 'Wrong PIN. {n} tries left.', pin_locked: 'Too many tries. Try again in {n} min.',
+      pin_net: 'Cannot reach the server. Check the connection and try again.', switch_user: 'Switch user', del_digit: 'Delete', pin_ok: 'OK',
+      setup_t: 'Set up profiles', setup_p: 'Create one profile for each person. Every profile has its own PIN and only sees its own data.',
+      setup_person: 'Person {n}', setup_name: 'Name', setup_ph1: 'e.g. Me', setup_ph2: 'e.g. Mom', setup_ph: 'e.g. Dad',
+      setup_pin: 'PIN (4 to 6 digits)', setup_pin2: 'Repeat PIN', setup_add: '+ Add person', setup_remove: 'Remove', setup_go: 'Save and start',
+      e_setup_name: 'Every profile needs a name.', e_setup_pin: 'PIN must be 4 to 6 digits.', e_setup_match: 'The repeated PIN does not match.', e_setup_dupe: 'Each profile needs a different name.', e_setup_local: 'The first profiles must be created on the home network, at http://localhost:8088 on the computer running the app.',
+      lock: 'Lock', prof_t: 'Profile & security', prof_p: 'You are using the profile {n}.',
+      prof_name: 'Profile name', pin_change: 'Change PIN', pin_cur: 'Current PIN', pin_new: 'New PIN', pin_new2: 'Repeat new PIN',
+      prof_add: 'Add a new profile', prof_add_p: 'For another family member, up to 6 profiles.', lock_now: 'Lock now', lock_p: 'The app also locks itself after 15 minutes without use.',
+      t_pin_changed: 'PIN changed. Other devices using this profile were signed out.', t_renamed: 'Name updated.', t_prof_added: 'Profile {n} added.', t_expired: 'Session ended. Please enter your PIN again.', t_locked: 'App locked.',
+      e_pin_cur: 'Current PIN is wrong.', e_too_many: 'There are already 6 profiles, the maximum.',
+      store_server: 'Saved on your home server, in the profile {n}. Protected by PIN.',
+      carry_banner: '<strong>{n} recurring items</strong> from {m} are not added yet ({a}).', carry_add: 'Add them now',
+      sheet_new: 'Add expense', sheet_edit: 'Edit expense', type: 'Type',
+      must_ex: 'Rent, loans, utilities, insurance', defer_ex: 'Wants that can wait',
+      f_name: 'Name', f_name_ph: 'e.g. Electricity bill', f_amount: 'Amount ({s})', f_due: 'Due day of month', f_due_ph: 'Optional',
+      f_cat: 'Category', f_note: 'Note', f_note_ph: 'Optional, e.g. account number', f_rec: 'Repeats every month',
+      e_name: 'Give this expense a name.', e_amount: 'Enter an amount greater than zero.', e_due: 'Due day must be from 1 to 31, or left blank.',
+      delete: 'Delete', delete_yes: 'Yes, delete', save_changes: 'Save changes', add_to: 'Add to {m}', close: 'Close',
+      t_saved: 'Saved.', t_added: '{n} added.', t_deleted: '{n} deleted.', t_moved: '{n} moved to {m}.', t_moved_n: '{n} items moved to {m}.',
+      t_income: 'Income for {m} saved.', t_carry: '{n} recurring items added.', t_ex: 'Examples copied. Edit or delete anything that does not apply.', t_cleared: 'Expenses for {m} deleted.',
+      err_perm: 'This change could not be saved. You may only have view access.', err_quota: 'Storage is full. Delete some old expenses and try again.',
+      err_gone: 'Saving is no longer available. Reload the page.', err_net: 'Could not save. Check your connection and try again.',
+      hx_paid: 'Must-pay paid', hx_of: 'From income of {a}', badge_late: '{n} late', badge_soon: '{n} due soon', tile_sub: '{n} items · {p}% paid',
+      q_must: 'Must pay', q_defer: 'Defer', q_inc: 'Income', q_copy: 'Copy', q_rep: 'Reports', welcome: 'Welcome', view_t: 'Demo view.', view_p: 'Sample data only, nothing can be changed.', w_left: 'Left', w_short: '{a} short',
+      showing: 'Showing {a}–{b} of {n}', prev_page: 'Previous page', next_page: 'Next page'
+    }
+  };
+  const MONTHS = {
+    ms: ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'],
+    en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  };
+  const MONTHS_S = {
+    ms: ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'],
+    en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  };
+  // Category keys are stored in English; labels are translated for display.
+  const CATEGORIES = ['Housing', 'Utilities', 'Loans & debt', 'Insurance', 'Food & groceries', 'Transport', 'Education', 'Health', 'Family', 'Subscriptions', 'Shopping', 'Leisure', 'Savings', 'Other'];
+  const CAT_MS = { 'Housing': 'Kediaman', 'Utilities': 'Utiliti', 'Loans & debt': 'Pinjaman & hutang', 'Insurance': 'Insurans & takaful', 'Food & groceries': 'Makanan & dapur', 'Transport': 'Pengangkutan', 'Education': 'Pendidikan', 'Health': 'Kesihatan', 'Family': 'Keluarga', 'Subscriptions': 'Langganan', 'Shopping': 'Membeli-belah', 'Leisure': 'Hiburan & riadah', 'Savings': 'Simpanan', 'Other': 'Lain-lain' };
+  const CURRENCIES = [['RM', 'RM · Ringgit'], ['S$', 'S$ · Dolar SG'], ['$', '$ · Dolar AS'], ['€', '€ · Euro'], ['£', '£ · Paun'], ['Rp', 'Rp · Rupiah'], ['A$', 'A$ · Dolar AU']];
+  const LOCAL_KEY = 'paycheck-planner-v1';
+  const LANG_KEY = 'paycheck-planner-lang';
+  const THEME_KEY = 'paycheck-planner-theme';
+  const HOST_THEME = document.documentElement.getAttribute('data-theme');
+  // Showcase build (GitHub Pages): sample data only, nothing can be changed or saved.
+  const VIEW_ONLY = !!window.RB_VIEW_ONLY;
+  const nm = (i, lang) => i.i18n ? i.i18n[lang] : i.name;
+  const SESSION_KEY = 'rancang-belanja-session';
+  const AUTO_LOCK_MS = 15 * 60 * 1000;
+  const initial = n => (String(n || '?').trim()[0] || '?').toUpperCase();
+
+  // Talks to server.js when the app is served by it (Docker). Absent elsewhere.
+  const srv = {
+    token: null,
+    async call(method, path, body, keepalive) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (srv.token) headers.Authorization = 'Bearer ' + srv.token;
+      const res = await fetch('/api' + path, { method, headers, body: body ? JSON.stringify(body) : undefined, keepalive: !!keepalive });
+      let data = null;
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok) throw Object.assign(new Error((data && data.error) || 'http_' + res.status), { status: res.status, data: data || {} });
+      return data || {};
+    },
+    getToken() { try { return sessionStorage.getItem(SESSION_KEY); } catch (e) { return null; } },
+    setToken(tok) { srv.token = tok; try { if (tok) sessionStorage.setItem(SESSION_KEY, tok); else sessionStorage.removeItem(SESSION_KEY); } catch (e) {} }
+  };
+  const EXAMPLE_INCOME = 5200;
+  const PAGE_SIZE = 10;
+
+  function makeT(lang) {
+    const d = DICT[lang] || DICT.ms;
+    return (k, v) => String(d[k] != null ? d[k] : (DICT.en[k] != null ? DICT.en[k] : k)).replace(/\{(\w+)\}/g, (_, x) => v && v[x] != null ? v[x] : '');
+  }
+  // Only our own dictionary strings (with <b>/<strong>) go through this; user values are escaped first.
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const Rich = ({ text, tag, cls }) => React.createElement(tag || 'span', { className: cls, dangerouslySetInnerHTML: { __html: text } });
+
+  // ---------- helpers ----------
+  const pad = n => String(n).padStart(2, '0');
+  const monthKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1);
+  const parseM = m => m.split('-').map(Number);
+  const shiftMonth = (m, delta) => { const [y, mo] = parseM(m); return monthKey(new Date(y, mo - 1 + delta, 1)); };
+  const daysIn = m => { const [y, mo] = parseM(m); return new Date(y, mo, 0).getDate(); };
+  const mLong = (m, lang, withYear) => { const [y, mo] = parseM(m); return MONTHS[lang][mo - 1] + (withYear ? ' ' + y : ''); };
+  const mShort = (m, lang) => MONTHS_S[lang][parseM(m)[1] - 1];
+  const sum = arr => arr.reduce((a, i) => a + (Number(i.amount) || 0), 0);
+  function money(sym, n, whole) {
+    const v = Math.abs(n);
+    const cents = whole ? (Math.round(v * 100) % 100 !== 0) : true;
+    const s = v.toLocaleString('en-MY', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 });
+    return (n < 0 ? '−' : '') + sym + (/[A-Za-z]$/.test(sym) ? ' ' : '') + s;
+  }
+  const compact = (sym, n) => n >= 10000 ? sym + (n / 1000).toFixed(n >= 100000 ? 0 : 1) + 'k' : money(sym, n, true);
+  const catLabel = (c, lang) => lang === 'ms' ? (CAT_MS[c] || c) : c;
+
+  function incomeFor(profile, month) {
+    const inc = (profile && profile.incomes) || {};
+    if (inc[month] != null) return Number(inc[month]) || 0;
+    const earlier = Object.keys(inc).filter(k => k < month).sort();
+    return earlier.length ? Number(inc[earlier[earlier.length - 1]]) || 0 : 0;
+  }
+  function dueState(item, month, today, t, lang) {
+    if (item.paid) return { k: 'paid', label: t('paid') };
+    if (!item.dueDay) return { k: 'none', label: t('anytime') };
+    const d = Math.min(item.dueDay, daysIn(month));
+    const tm = monthKey(today);
+    if (month < tm) return { k: 'late', label: t('overdue') };
+    if (month > tm) return { k: 'upcoming', label: t('due_on', { d, m: mShort(month, lang) }) };
+    const diff = d - today.getDate();
+    if (diff < 0) return { k: 'late', label: t('overdue_d', { d: -diff }) };
+    if (diff === 0) return { k: 'soon', label: t('due_today') };
+    if (diff <= 3) return { k: 'soon', label: t('due_in', { d: diff }) };
+    return { k: 'upcoming', label: t('due_on', { d, m: mShort(month, lang) }) };
+  }
+  const RANK = { late: 0, soon: 1, upcoming: 2, none: 3, paid: 4 };
+  function sortItems(list, month, today) {
+    const k = i => RANK[dueState(i, month, today, x => x, 'en').k];
+    return list.slice().sort((a, b) => (k(a) - k(b)) || ((a.dueDay || 99) - (b.dueDay || 99)) || ((b.amount || 0) - (a.amount || 0)));
+  }
+  // Fewest deferrable items that close the gap: one item if a single one covers it, else largest first.
+  function planDefer(items, gap) {
+    const pool = items.slice().sort((a, b) => a.amount - b.amount);
+    const chosen = []; let rem = gap;
+    while (rem > 0.004 && pool.length) {
+      const idx = pool.findIndex(i => i.amount >= rem);
+      if (idx >= 0) { chosen.push(pool[idx]); rem -= pool[idx].amount; break; }
+      const big = pool.pop(); chosen.push(big); rem -= big.amount;
+    }
+    return { chosen, short: Math.max(0, rem) };
+  }
+  function exampleItems(month) {
+    const e = (en, bm, amount, priority, category, dueDay, extra) => Object.assign({ id: 'ex-' + en.replace(/\W+/g, '-'), name: en, i18n: { en: en, ms: bm }, amount, priority, category, dueDay, month, recurring: true, paid: false, note: '' }, extra || {});
+    return [
+      e('House rent', 'Sewa rumah', 1200, 'must', 'Housing', 1, { paid: true }),
+      e('Car loan instalment', 'Ansuran kereta', 850, 'must', 'Loans & debt', 7),
+      e('Electricity bill', 'Bil elektrik', 180, 'must', 'Utilities', 15, { paid: true }),
+      e('Water bill', 'Bil air', 35, 'must', 'Utilities', 20),
+      e('Home internet', 'Internet rumah', 139, 'must', 'Utilities', 22),
+      e('Study loan repayment', 'Bayaran balik pinjaman pendidikan', 200, 'must', 'Education', 28),
+      e('Medical & life takaful', 'Takaful perubatan & hayat', 150, 'must', 'Insurance', 10, { paid: true }),
+      e('Groceries', 'Barangan dapur', 800, 'must', 'Food & groceries', null),
+      e('Petrol & tolls', 'Minyak & tol', 250, 'must', 'Transport', null),
+      e('Video streaming', 'Langganan video strim', 55, 'defer', 'Subscriptions', 12, { paid: true }),
+      e('Gym membership', 'Keahlian gim', 120, 'defer', 'Health', 5),
+      e('Running shoes', 'Kasut larian', 250, 'defer', 'Shopping', null, { recurring: false }),
+      e('Dining out', 'Makan di luar', 300, 'defer', 'Leisure', null),
+      e('Weekend trip to Melaka', 'Percutian hujung minggu ke Melaka', 900, 'defer', 'Leisure', 26, { recurring: false })
+    ];
+  }
+  // Six months of sample data for the showcase, so Reports has a real trend.
+  function showcaseItems(month) {
+    const out = [];
+    [0.92, 1.06, 0.97, 1.12, 0.95, 1].forEach((f, k) => {
+      const d = k - 5, m = shiftMonth(month, d);
+      exampleItems(m).forEach(i => {
+        if (d < 0 && !i.recurring) return;
+        out.push(Object.assign({}, i, { id: i.id + '-' + m, seriesId: i.id, amount: i.priority === 'must' ? i.amount : Math.round(i.amount * f), paid: d < 0 ? true : i.paid }));
+      });
+    });
+    return out;
+  }
+  function errKey(e) {
+    const c = e && e.code;
+    if (c === 'invalid_argument') return 'err_perm';
+    if (c === 'quota_exceeded') return 'err_quota';
+    if (c === 'revoked' || c === 'not_granted') return 'err_gone';
+    return 'err_net';
+  }
+
+  // ---------- icons ----------
+  const svg = (d, size, sw) => html`<svg width=${size || 20} height=${size || 20} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=${sw || 2} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const Icon = {
+    home: svg(html`<path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>`),
+    list: svg(html`<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>`),
+    chart: svg(html`<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`),
+    gear: svg(html`<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>`),
+    check: svg(html`<path d="M5 12.5l4.5 4.5L19 7.5"/>`, 14, 3.2),
+    left: svg(html`<path d="M15 6l-6 6 6 6"/>`, 18, 2.2),
+    right: svg(html`<path d="M9 6l6 6-6 6"/>`, 18, 2.2),
+    plus: svg(html`<path d="M12 5v14M5 12h14"/>`, 18, 2.6),
+    sun: svg(html`<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>`, 17),
+    moon: svg(html`<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>`, 17),
+    monitor: svg(html`<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>`, 17),
+    sparkle: svg(html`<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>`, 18),
+    lock: svg(html`<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>`, 16),
+    cal: svg(html`<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>`, 16),
+    bill: svg(html`<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>`),
+    clock: svg(html`<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>`),
+    wallet: svg(html`<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><circle cx="16" cy="13.5" r="1.2"/>`),
+    copy: svg(html`<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>`),
+    eye: svg(html`<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>`, 17),
+    pen: svg(html`<path d="M4 20h4L19 9l-4-4L4 16z"/>`, 13),
+    back: svg(html`<path d="M20 12H5M11 6l-6 6 6 6"/>`, 20),
+    close: svg(html`<path d="M6 6l12 12M18 6L6 18"/>`, 16, 2.4),
+    mark: html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="#F2B544" stroke-width="2"/><path d="M3 10h18" stroke="#F2B544" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.6" fill="#F2B544"/></svg>`
+  };
+
+  // ---------- small components ----------
+  function MonthNav({ month, setMonth, lang, t }) {
+    const y = parseM(month)[0];
+    return html`<div class="month-nav">
+      <button class="mn-arrow" onClick=${() => setMonth(shiftMonth(month, -1))} aria-label=${t('prev_month')}>${Icon.left}</button>
+      <div class="month-label" aria-live="polite">
+        <span class="mn-cal" aria-hidden="true">${Icon.cal}</span>
+        <span class="mn-text"><b>${mLong(month, lang)}</b><small>${y}</small></span>
+      </div>
+      <button class="mn-arrow" onClick=${() => setMonth(shiftMonth(month, 1))} aria-label=${t('next_month')}>${Icon.right}</button>
+    </div>`;
+  }
+  function LangSwitch({ lang, setLang }) {
+    return html`<div class="lang" role="group" aria-label="Bahasa / Language">
+      <button aria-pressed=${lang === 'ms'} onClick=${() => setLang('ms')}>BM</button>
+      <button aria-pressed=${lang === 'en'} onClick=${() => setLang('en')}>EN</button>
+    </div>`;
+  }
+
+  const THEMES = [['system', 'th_system', 'monitor'], ['light', 'th_light', 'sun'], ['dark', 'th_dark', 'moon']];
+  function ThemeSwitch({ theme, setTheme, t }) {
+    return html`<div class="lang icons" role="group" aria-label=${t('theme_t')}>
+      ${THEMES.map(([id, k, ic]) => html`<button key=${id} aria-pressed=${theme === id} onClick=${() => setTheme(id)} title=${t(k)} aria-label=${t(k)}>${Icon[ic]}</button>`)}
+    </div>`;
+  }
+  function ThemeCycle({ theme, setTheme, t }) {
+    const i = Math.max(0, THEMES.findIndex(x => x[0] === theme));
+    const next = THEMES[(i + 1) % 3];
+    return html`<button class="theme-cycle" onClick=${() => setTheme(next[0])} aria-label=${t('theme_t') + ': ' + t(THEMES[i][1])} title=${t(THEMES[i][1])}>${Icon[THEMES[i][2]]}</button>`;
+  }
+
+  function Row({ item, ctx, showDefer }) {
+    const { sym, month, today, t, lang, readOnly, onToggle, onEdit, onDefer } = ctx;
+    const st = dueState(item, month, today, t, lang);
+    const meta = [catLabel(item.category, lang), item.recurring ? t('every_month') : t('one_off'), item.note].filter(Boolean).join(' · ');
+    return html`<li class=${'row' + (item.paid ? ' is-paid' : '')}>
+      <button class="check" aria-pressed=${!!item.paid} disabled=${readOnly} aria-label=${(item.paid ? t('mark_unpaid') : t('mark_paid')) + nm(item, lang)} onClick=${() => onToggle(item)}>${item.paid ? html`<span style=${{ color: '#fff', display: 'grid' }}>${Icon.check}</span>` : null}</button>
+      <button class="row-main" disabled=${readOnly} onClick=${() => onEdit(item)} aria-label=${t('edit') + nm(item, lang)}>
+        <span class="row-name">${nm(item, lang)}</span>
+        <span class="row-meta">${meta}</span>
+      </button>
+      <div class="row-end">
+        <span class="amt">${money(sym, item.amount)}</span>
+        <span class="row-tags">
+          ${showDefer && !item.paid && !readOnly ? html`<button class="defer-btn" onClick=${() => onDefer(item)}>${t('move_to', { m: mShort(shiftMonth(month, 1), lang) })}</button>` : null}
+          <span class=${'pill pill-' + st.k}>${st.label}</span>
+        </span>
+      </div>
+    </li>`;
+  }
+
+  // ---------- pages ----------
+  function homeCalc(v, ctx) {
+    const { sym, t, lang, month } = ctx;
+    const { income, mustT, deferT, defer } = v;
+    const afterMust = income - mustT, afterAll = income - mustT - deferT;
+    const next = mLong(shiftMonth(month, 1), lang);
+    let status;
+    if (!income) status = { k: 'none', c: 'var(--muted)', ic: '?', title: t('st_none_t'), p: t('st_none_p') };
+    else if (afterAll >= 0) status = { k: 'good', c: 'var(--ok)', ic: '✓', title: t('st_good_t'), p: t('st_good_p', { a: money(sym, afterAll) }) };
+    else if (afterMust >= 0) status = { k: 'warn', c: 'var(--warn)', ic: '!', title: t('st_warn_t'), p: t('st_warn_p', { a: money(sym, -afterAll), m: next }) };
+    else status = { k: 'bad', c: 'var(--must)', ic: '!', title: t('st_bad_t'), p: t('st_bad_p', { a: money(sym, -afterAll) }) };
+    const plan = income && afterAll < 0 ? planDefer(defer.filter(i => !i.paid), -afterAll) : { chosen: [], short: 0 };
+    return { afterMust, afterAll, next, status, plan };
+  }
+  const QUICK_C = { q_must: 'var(--must)', q_defer: 'var(--defer)', q_inc: 'var(--ok)', q_copy: 'var(--warn)', q_rep: '#8B6CF6' };
+
+  // Animates a number from its previous value to the new one (skipped when the device asks for less motion).
+  const LESS_MOTION = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } })();
+  function CountUp({ value, render }) {
+    const [n, setN] = useState(LESS_MOTION ? value : 0);
+    const from = useRef(0);
+    useEffect(() => {
+      if (LESS_MOTION) { setN(value); return; }
+      const a = from.current, t0 = performance.now();
+      let raf;
+      const step = now => {
+        const p = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - p, 3);
+        setN(p < 1 ? Math.round(a + (value - a) * e) : value);
+        if (p < 1) raf = requestAnimationFrame(step);
+      };
+      raf = requestAnimationFrame(step);
+      return () => { cancelAnimationFrame(raf); from.current = value; };
+    }, [value]);
+    useEffect(() => { from.current = n; });
+    return render(n);
+  }
+
+  // Wallet card (balance + how income is split), status alert and quick actions at the top of Home.
+  function HomeTop({ ctx, v, go, openAdd, carry, onCarry }) {
+    const { sym, t, lang, month, today, readOnly } = ctx;
+    const { afterMust, afterAll, status } = homeCalc(v, ctx);
+    const states = v.must.filter(i => !i.paid).map(i => dueState(i, month, today, t, lang).k);
+    const late = states.filter(k => k === 'late').length, soon = states.filter(k => k === 'soon').length;
+    const base = Math.max(v.income, v.mustT + v.deferT, 1);
+    const w = n => Math.max(0, n) / base * 100 + '%';
+    const pc = n => Math.round(n / v.income * 100) + '%';
+    const quick = [
+      ['q_must', Icon.bill, () => go('expenses', 'must')],
+      ['q_defer', Icon.clock, () => go('expenses', 'defer')],
+      ['q_inc', Icon.wallet, () => go('settings')],
+      ['q_copy', Icon.copy, onCarry, readOnly || !carry.length, carry.length],
+      ['q_rep', Icon.chart, () => go('reports')]
+    ];
+    return html`<div class="hx-wrap">
+      <section class="wallet" aria-label=${t('left_after')}>
+        <div class="w-head"><span class="w-lbl">${t('left_after')}</span><span class="w-mark" aria-hidden="true"><i></i></span></div>
+        <div class=${'w-amt' + (afterMust < 0 ? ' neg' : '')}><${CountUp} value=${afterMust} render=${n => money(sym, n, true)} /></div>
+        <div class="w-sub">${v.income ? t('hx_of', { a: money(sym, v.income, true) }) : t('st_none_t')}</div>
+        <div class="alloc" aria-hidden="true">
+          <span style=${{ width: w(v.mustPaid), background: '#FF7A6B' }}></span>
+          <span style=${{ width: w(v.mustT - v.mustPaid), background: '#FFC2B9' }}></span>
+          <span style=${{ width: w(v.deferT), background: '#6FB3F2' }}></span>
+          <span style=${{ width: w(afterAll), background: '#4FD592' }}></span>
+        </div>
+        <div class="alloc-leg">
+          <span><i style=${{ background: '#FF7A6B' }}></i>${t('must')} ${v.income ? pc(v.mustT) : compact(sym, v.mustT)}</span>
+          <span><i style=${{ background: '#6FB3F2' }}></i>${t('defer')} ${v.income ? pc(v.deferT) : compact(sym, v.deferT)}</span>
+          ${v.income ? (afterAll >= 0
+            ? html`<span><i style=${{ background: '#4FD592' }}></i>${t('w_left')} ${pc(afterAll)}</span>`
+            : html`<span style=${{ color: '#FFB4A8' }}>${t('w_short', { a: money(sym, -afterAll, true) })}</span>`) : null}
+        </div>
+        <div class="w-actions">
+          <button class="w-btn" onClick=${() => go('settings')}>${Icon.pen}${t('income')}</button>
+          ${!readOnly ? html`<button class="w-btn main" onClick=${() => openAdd('must')}>${Icon.plus}${t('add_expense')}</button>` : null}
+        </div>
+      </section>
+      <div class="hx-side">
+        <button class=${'alert ' + status.k} onClick=${() => go(v.income ? 'expenses' : 'settings', 'must')}>
+          <span class="alert-ic" aria-hidden="true">${status.ic}</span>
+          <span class="alert-txt"><b>${status.title}</b><small>${status.p}</small></span>
+          ${late ? html`<span class="badge late">${t('badge_late', { n: late })}</span>` : soon ? html`<span class="badge soon">${t('badge_soon', { n: soon })}</span>` : html`<span></span>`}
+          ${Icon.right}
+        </button>
+        <div class="quick">${quick.map(([k, ic, fn, dis, n]) => html`<button key=${k} onClick=${fn} disabled=${!!dis}><span class="q" style=${{ '--qc': QUICK_C[k] }}>${ic}</span><em>${t(k)}</em>${n ? html`<span class="cnt">${n}</span>` : null}</button>`)}</div>
+      </div>
+    </div>`;
+  }
+
+  function HomePage({ ctx, v, go, openAdd, onApplyPlan }) {
+    const { sym, t, lang, month, today, readOnly } = ctx;
+    const { income, must, defer } = v;
+    const { next, status, plan } = homeCalc(v, ctx);
+    const toPay = sortItems(must.filter(i => !i.paid), month, today).slice(0, 5);
+    const pc = (a, b) => b ? Math.round(a / b * 100) : 0;
+    const tiles = [['must', Icon.bill, v.mustT, must.length, pc(v.mustPaid, v.mustT)], ['defer', Icon.clock, v.deferT, defer.length, pc(sum(defer.filter(i => i.paid)), v.deferT)]];
+    const action = plan.chosen.length > 0 || !income;
+
+    return html`<${React.Fragment}>
+      <div class="tiles">${tiles.map(([k, ic, tot, n, p]) => html`<button key=${k} class=${'tile ' + k} onClick=${() => go('expenses', k)}>
+        <span class="tile-ic">${ic}</span>
+        <span class="tile-lbl">${t(k)}</span>
+        <span class="tile-amt"><${CountUp} value=${tot} render=${n => money(sym, n, true)} /></span>
+        <span class="tile-sub">${t('tile_sub', { n, p })}</span>
+        <span class="tile-bar" aria-hidden="true"><span style=${{ width: p + '%' }}></span></span>
+      </button>`)}</div>
+
+      <div class="home-grid" style=${action ? null : { gridTemplateColumns: 'minmax(0, 1fr)' }}>
+        <div class="stack">
+          <div class="sec-head"><h2>${t('to_pay')}</h2><button class="link-btn" onClick=${() => go('expenses', 'must')}>${t('see_all')} →</button></div>
+          <section class="card">
+            ${toPay.length
+              ? html`<ul class="list">${toPay.map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} />`)}</ul>`
+              : html`<div class="empty">${must.length ? t('all_paid') : t('no_must')}</div>`}
+            ${!readOnly && !must.length ? html`<button class="add-inline" onClick=${() => openAdd('must')}>${t('add_must')}</button>` : null}
+          </section>
+        </div>
+        ${!action ? null : html`<section class=${'card status ' + status.k}>
+          <div class="status-head">
+            <span class="status-icon" style=${{ background: status.c }} aria-hidden="true">${status.ic}</span>
+            <h3>${status.title}</h3>
+          </div>
+          <p>${status.p}</p>
+          ${plan.chosen.length ? html`<div class="chips">${plan.chosen.map(i => html`<span class="chip" key=${i.id}>${nm(i, lang)} · ${money(sym, i.amount, true)}</span>`)}</div>` : null}
+          ${plan.short > 0 && plan.chosen.length ? html`<p>${t('st_short', { a: money(sym, plan.short) })}</p>` : null}
+          ${plan.chosen.length && !readOnly ? html`<button class="btn-primary" onClick=${() => onApplyPlan(plan.chosen)}>${t('move_n', { m: next })}</button>` : null}
+          ${!income && !readOnly ? html`<button class="btn-primary" onClick=${() => go('settings')}>${t('go_settings')}</button>` : null}
+        </section>`}
+      </div>
+    <//>`;
+  }
+
+  function ExpensesPage({ ctx, v, tab, setTab, openAdd }) {
+    const { sym, t, month, today, readOnly } = ctx;
+    const [q, setQ] = useState('');
+    const list = tab === 'must' ? v.must : v.defer;
+    const needle = q.trim().toLowerCase();
+    const shown = needle ? list.filter(i => (nm(i, ctx.lang) + ' ' + (i.note || '') + ' ' + catLabel(i.category, ctx.lang)).toLowerCase().includes(needle)) : list;
+    const [pg, setPg] = useState(0);
+    useEffect(() => setPg(0), [tab, needle, month]);
+    const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+    const at = Math.min(pg, pages - 1);
+    const slice = sortItems(shown, month, today).slice(at * PAGE_SIZE, at * PAGE_SIZE + PAGE_SIZE);
+    const total = sum(list), paid = sum(list.filter(i => i.paid));
+    const color = tab === 'must' ? 'var(--must)' : 'var(--defer)';
+    return html`<${React.Fragment}>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected=${tab === 'must'} onClick=${() => setTab('must')}>
+          <span class="t"><span class="dot" style=${{ background: 'var(--must)' }}></span>${t('must')}</span><small>${money(sym, v.mustT, true)}</small>
+        </button>
+        <button role="tab" aria-selected=${tab === 'defer'} onClick=${() => setTab('defer')}>
+          <span class="t"><span class="dot" style=${{ background: 'var(--defer)' }}></span>${t('defer')}</span><small>${money(sym, v.deferT, true)}</small>
+        </button>
+      </div>
+      <section class="card" role="tabpanel">
+        <p>${tab === 'must' ? t('must_desc') : t('defer_desc')}</p>
+        <div class="progress" aria-hidden="true"><span style=${{ width: (total ? paid / total * 100 : 0) + '%', background: color }}></span></div>
+        <div class="list-head num"><span>${t('list_paid', { a: money(sym, paid) })}</span><span>${t('list_left', { a: money(sym, total - paid) })}</span></div>
+        ${list.length > 4 ? html`<input id="search" class="search" type="search" value=${q} onInput=${e => setQ(e.target.value)} placeholder=${t('search')} aria-label=${t('search')} />` : null}
+        ${shown.length
+          ? html`<ul class="list">${slice.map(it => html`<${Row} key=${it.id} item=${it} ctx=${ctx} showDefer=${tab === 'defer'} />`)}</ul>`
+          : html`<div class="empty">${needle ? t('empty_search') : (tab === 'must' ? t('empty_must') : t('empty_defer'))}</div>`}
+        ${pages > 1 ? html`<div class="pager">
+          <span class="num">${t('showing', { a: at * PAGE_SIZE + 1, b: at * PAGE_SIZE + slice.length, n: shown.length })}</span>
+          <span class="pager-btns">
+            <button class="mn-arrow" onClick=${() => setPg(at - 1)} disabled=${at === 0} aria-label=${t('prev_page')}>${Icon.left}</button>
+            <button class="mn-arrow" onClick=${() => setPg(at + 1)} disabled=${at >= pages - 1} aria-label=${t('next_page')}>${Icon.right}</button>
+          </span>
+        </div>` : null}
+        ${!readOnly ? html`<button class="add-inline" onClick=${() => openAdd(tab)}>${tab === 'must' ? t('add_must') : t('add_defer')}</button>` : null}
+      </section>
+    <//>`;
+  }
+
+  function ReportsPage({ ctx, v, allItems, profile, exampleMode }) {
+    const { sym, t, lang, month } = ctx;
+    const months = [-5, -4, -3, -2, -1, 0].map(d => shiftMonth(month, d));
+    const trend = months.map(m => {
+      const its = allItems.filter(i => i.month === m);
+      return { m, must: sum(its.filter(i => i.priority === 'must')), defer: sum(its.filter(i => i.priority !== 'must')) };
+    });
+    const max = Math.max(1, ...trend.map(x => x.must + x.defer));
+    const cats = useMemo(() => {
+      const m = {};
+      v.view.forEach(i => { const c = i.category || 'Other'; m[c] = m[c] || { must: 0, defer: 0 }; m[c][i.priority === 'must' ? 'must' : 'defer'] += Number(i.amount) || 0; });
+      return Object.entries(m).map(([c, x]) => ({ c, must: x.must, defer: x.defer, t: x.must + x.defer })).sort((a, b) => b.t - a.t);
+    }, [v.view]);
+    const cmax = cats.length ? cats[0].t : 1;
+    const total = v.mustT + v.deferT, paid = sum(v.view.filter(i => i.paid));
+    return html`<${React.Fragment}>
+      <section class="card">
+        <h2 class="card-title">${t('month_sum')}</h2>
+        <dl class="kv">
+          <dt>${t('income')}</dt><dd>${money(sym, v.income)}</dd>
+          <dt>${t('must')}</dt><dd style=${{ color: 'var(--must)' }}>${money(sym, v.mustT)}</dd>
+          <dt>${t('defer')}</dt><dd style=${{ color: 'var(--defer)' }}>${money(sym, v.deferT)}</dd>
+          <dt>${t('total_spend')}</dt><dd>${money(sym, total)}</dd>
+          <dt>${t('paid_total')}</dt><dd>${money(sym, paid)}</dd>
+          <dt>${t('unpaid_total')}</dt><dd>${money(sym, total - paid)}</dd>
+          <dt>${t('balance')}</dt><dd style=${{ color: v.income - total < 0 ? 'var(--must)' : 'var(--ok)' }}>${money(sym, v.income - total)}</dd>
+        </dl>
+      </section>
+      <div class="report-grid">
+        <section class="card">
+          <h2 class="card-title">${t('trend')}</h2>
+          <div>
+            <div class="trend" role="img" aria-label=${t('trend')}>
+              ${trend.map(x => html`<div class=${'tcol' + (x.m === month ? ' cur' : '')} key=${x.m}>
+                <span class="tval">${x.must + x.defer ? compact(sym, x.must + x.defer) : ''}</span>
+                <div class="stack" style=${{ height: (x.must + x.defer) / max * 100 * 0.85 + '%' }}>
+                  <span style=${{ flex: x.must, background: 'var(--must)', opacity: x.m === month ? 1 : .75 }}></span>
+                  <span style=${{ flex: x.defer, background: 'var(--defer)', opacity: x.m === month ? 1 : .75 }}></span>
+                </div>
+              </div>`)}
+            </div>
+            <div class="tlabels" style=${{ marginTop: '6px' }}>${months.map(m => html`<span key=${m} class=${m === month ? 'cur' : ''}>${mShort(m, lang)}</span>`)}</div>
+          </div>
+          <div class="legend"><span><i class="dot" style=${{ background: 'var(--must)' }}></i>${t('must')}</span><span><i class="dot" style=${{ background: 'var(--defer)' }}></i>${t('defer')}</span></div>
+        </section>
+        <section class="card">
+          <h2 class="card-title">${t('by_cat')}</h2>
+          ${cats.length ? html`<ul class="cat-list">${cats.map(r => html`<li class="cat-row" key=${r.c}>
+            <div class="cat-top"><span>${catLabel(r.c, lang)}</span><span class="num" style=${{ fontWeight: 700 }}>${money(sym, r.t)}</span></div>
+            <div class="cat-bar" aria-hidden="true"><span style=${{ width: r.must / cmax * 100 + '%', background: 'var(--must)' }}></span><span style=${{ width: r.defer / cmax * 100 + '%', background: 'var(--defer)' }}></span></div>
+          </li>`)}</ul>` : html`<div class="empty">${t('no_data')}</div>`}
+        </section>
+      </div>
+    <//>`;
+  }
+
+  function SettingsPage({ ctx, v, profile, meName, setLang, theme, setTheme, onCurrency, onIncome, carry, onCarry, onClear, backend, loading, exampleMode }) {
+    const { sym, t, lang, month, readOnly } = ctx;
+    const [inc, setInc] = useState(v.income ? String(v.income) : '');
+    const [confirm, setConfirm] = useState(false);
+    useEffect(() => { setInc(v.income ? String(v.income) : ''); setConfirm(false); }, [month, loading]);
+    const saveInc = e => { e.preventDefault(); const n = Math.round(parseFloat(inc) * 100) / 100; if (n >= 0) onIncome(n); };
+    const prevName = mLong(shiftMonth(month, -1), lang);
+    return html`<section class="card set-list">
+      <div class="set-row">
+        <div><h3>${t('lang_t')}</h3><p>${t('lang_p')}</p></div>
+        <div class="lang-big" role="group" aria-label=${t('lang_t')}>
+          <button aria-pressed=${lang === 'ms'} onClick=${() => setLang('ms')}>Bahasa Melayu<small>BM</small></button>
+          <button aria-pressed=${lang === 'en'} onClick=${() => setLang('en')}>English<small>EN</small></button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('theme_t')}</h3><p>${t('theme_p')}</p></div>
+        <div class="lang-big three" role="group" aria-label=${t('theme_t')}>
+          ${THEMES.map(([id, k, ic]) => html`<button key=${id} aria-pressed=${theme === id} onClick=${() => setTheme(id)}><span class="bi">${Icon[ic]}${t(k)}</span></button>`)}
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('inc_t', { m: mLong(month, lang, true) })}</h3><p>${t('inc_p')}</p></div>
+        <form class="inline-form" onSubmit=${saveInc}>
+          <input id="income" class="input num" type="number" inputmode="decimal" min="0" step="0.01" value=${inc} onInput=${e => setInc(e.target.value)} placeholder=${sym + ' 0.00'} aria-label=${t('income')} disabled=${readOnly} />
+          <button class="btn-primary" type="submit" disabled=${readOnly}>${t('save')}</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('cur_t')}</h3><p>${t('cur_p')}</p></div>
+        <select id="currency" class="select" value=${sym} onChange=${e => onCurrency(e.target.value)} disabled=${readOnly} aria-label=${t('cur_t')}>
+          ${CURRENCIES.map(([s, l]) => html`<option key=${s} value=${s}>${l}</option>`)}
+        </select>
+      </div>
+      ${!exampleMode ? html`<${React.Fragment}>
+        <div class="divider"></div>
+        <div class="set-row">
+          <div><h3>${t('carry_t')}</h3><p>${carry.length ? t('carry_p', { n: carry.length, m: prevName }) : t('carry_none')}</p></div>
+          <button class="btn-ghost" onClick=${onCarry} disabled=${!carry.length}>${t('carry_btn')}</button>
+        </div>
+        <div class="divider"></div>
+        <div class="set-row">
+          <div><h3>${t('clear_t')}</h3><p>${t('clear_p', { n: v.view.length, m: mLong(month, lang, true) })}</p></div>
+          <div class="inline-form">
+            ${confirm
+              ? html`<button class="btn-ghost" onClick=${() => setConfirm(false)}>${t('cancel')}</button><button class="btn-danger solid" onClick=${() => { setConfirm(false); onClear(); }}>${t('clear_yes')}</button>`
+              : html`<button class="btn-danger" onClick=${() => setConfirm(true)} disabled=${!v.view.length}>${t('clear_btn')}</button>`}
+          </div>
+        </div>
+      <//>` : null}
+      <div class="divider"></div>
+      <p style=${{ display: 'flex', alignItems: 'center', gap: '8px' }}><span class="dot" style=${{ background: backend === 'db' || backend === 'server' ? 'var(--ok)' : 'var(--warn)' }}></span>${loading ? t('connecting') : backend === 'db' ? t('store_db') : backend === 'server' ? t('store_server', { n: meName }) : t('store_local')}</p>
+    </section>`;
+  }
+
+  function Sheet({ init, ctx, onClose, onSave, onDelete }) {
+    const { sym, t, lang, month } = ctx;
+    const item = init.item;
+    const [f, setF] = useState(() => item
+      ? { name: nm(item, lang), amount: String(item.amount), priority: item.priority, category: item.category || 'Other', dueDay: item.dueDay ? String(item.dueDay) : '', recurring: !!item.recurring, note: item.note || '' }
+      : { name: '', amount: '', priority: init.priority || 'must', category: init.priority === 'defer' ? 'Leisure' : 'Utilities', dueDay: '', recurring: true, note: '' });
+    const [err, setErr] = useState('');
+    const [confirmDel, setConfirmDel] = useState(false);
+    const nameRef = useRef(null);
+    useEffect(() => {
+      if (nameRef.current) nameRef.current.focus();
+      const k = e => { if (e.key === 'Escape') onClose(); };
+      window.addEventListener('keydown', k);
+      return () => window.removeEventListener('keydown', k);
+    }, []);
+    const set = (k, val) => setF(x => Object.assign({}, x, { [k]: val }));
+    const submit = e => {
+      e.preventDefault();
+      const amount = Math.round(parseFloat(f.amount) * 100) / 100;
+      if (!f.name.trim()) return setErr(t('e_name'));
+      if (!(amount > 0)) return setErr(t('e_amount'));
+      let due = null;
+      if (String(f.dueDay).trim() !== '') { due = parseInt(f.dueDay, 10); if (isNaN(due) || due < 1 || due > 31) return setErr(t('e_due')); }
+      onSave({ name: f.name.trim().slice(0, 80), amount, priority: f.priority, category: f.category, dueDay: due, recurring: !!f.recurring, note: f.note.trim().slice(0, 120) });
+    };
+    return html`<div class="scrim" onMouseDown=${e => { if (e.target === e.currentTarget) onClose(); }}>
+      <form class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" onSubmit=${submit} noValidate>
+        <div class="sheet-head">
+          <h2 id="sheet-title">${item ? t('sheet_edit') : t('sheet_new')}</h2>
+          <button type="button" class="icon-btn" onClick=${onClose} aria-label=${t('close')}>${Icon.close}</button>
+        </div>
+        <div class="field">
+          <span class="label">${t('type')}</span>
+          <div class="prio" role="radiogroup" aria-label=${t('type')}>
+            <label class=${f.priority === 'must' ? 'on-must' : ''}>
+              <input type="radio" name="prio" id="prio-must" checked=${f.priority === 'must'} onChange=${() => set('priority', 'must')} />
+              <b><span class="dot" style=${{ background: 'var(--must)' }}></span>${t('must')}</b><small>${t('must_ex')}</small>
+            </label>
+            <label class=${f.priority === 'defer' ? 'on-defer' : ''}>
+              <input type="radio" name="prio" id="prio-defer" checked=${f.priority === 'defer'} onChange=${() => set('priority', 'defer')} />
+              <b><span class="dot" style=${{ background: 'var(--defer)' }}></span>${t('defer')}</b><small>${t('defer_ex')}</small>
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-name">${t('f_name')}</label>
+          <input id="f-name" ref=${nameRef} class="input" value=${f.name} onInput=${e => set('name', e.target.value)} placeholder=${t('f_name_ph')} maxLength="80" autoComplete="off" />
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="f-amount">${t('f_amount', { s: sym })}</label>
+            <input id="f-amount" class="input num" type="number" inputmode="decimal" min="0" step="0.01" value=${f.amount} onInput=${e => set('amount', e.target.value)} placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label for="f-due">${t('f_due')}</label>
+            <input id="f-due" class="input num" type="number" inputmode="numeric" min="1" max="31" value=${f.dueDay} onInput=${e => set('dueDay', e.target.value)} placeholder=${t('f_due_ph')} />
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-cat">${t('f_cat')}</label>
+          <select id="f-cat" class="input" value=${f.category} onChange=${e => set('category', e.target.value)}>
+            ${CATEGORIES.map(c => html`<option key=${c} value=${c}>${catLabel(c, lang)}</option>`)}
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-note">${t('f_note')}</label>
+          <input id="f-note" class="input" value=${f.note} onInput=${e => set('note', e.target.value)} placeholder=${t('f_note_ph')} maxLength="120" autoComplete="off" />
+        </div>
+        <label class="check-line" for="f-rec">
+          <input id="f-rec" type="checkbox" checked=${f.recurring} onChange=${e => set('recurring', e.target.checked)} />${t('f_rec')}
+        </label>
+        ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+        <div class="sheet-actions">
+          ${item ? (confirmDel
+            ? html`<button type="button" class="btn-danger solid" onClick=${() => onDelete(item)}>${t('delete_yes')}</button>`
+            : html`<button type="button" class="btn-danger" onClick=${() => setConfirmDel(true)}>${t('delete')}</button>`) : null}
+          <div class="right">
+            <button type="button" class="btn-ghost" onClick=${onClose}>${t('cancel')}</button>
+            <button type="submit" class="btn-primary">${item ? t('save_changes') : t('add_to', { m: mLong(month, lang) })}</button>
+          </div>
+        </div>
+      </form>
+    </div>`;
+  }
+
+  // ---------- lock screen ----------
+  function Avatar({ p, size }) {
+    const c = p.color || '#3A80C2';
+    return html`<span class=${'avatar' + (size ? ' ' + size : '')} style=${{ background: c, boxShadow: size === 'lg' || size === 'md' ? '0 0 0 4px ' + c + '33' : undefined }} aria-hidden="true">${initial(p.name)}</span>`;
+  }
+
+  function PinPad({ profile, t, onSubmit, onBack }) {
+    const [pin, setPin] = useState('');
+    const [msg, setMsg] = useState('');
+    const [bad, setBad] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const len = profile.pinLen || 4;
+    const st = useRef({}).current;
+    st.pin = pin; st.busy = busy;
+    const submit = async value => {
+      setBusy(true); setMsg('');
+      const err = await onSubmit(value);
+      if (!err) return;
+      setBusy(false); setPin(''); setBad(true);
+      setTimeout(() => setBad(false), 400);
+      if (err.error === 'locked') setMsg(t('pin_locked', { n: Math.max(1, Math.ceil((err.retryAfterSec || 60) / 60)) }));
+      else if (err.error === 'wrong_pin') setMsg(t('pin_wrong', { n: err.attemptsLeft }));
+      else setMsg(t('pin_net'));
+    };
+    const press = d => {
+      if (st.busy) return;
+      const next = (st.pin + d).slice(0, 6);
+      setPin(next);
+      if (next.length === len) submit(next);
+    };
+    const del = () => { if (!st.busy) setPin(p => p.slice(0, -1)); };
+    useEffect(() => {
+      const k = e => {
+        if (/^[0-9]$/.test(e.key)) { e.preventDefault(); press(e.key); }
+        else if (e.key === 'Backspace') { e.preventDefault(); del(); }
+        else if (e.key === 'Escape' && onBack) onBack();
+      };
+      window.addEventListener('keydown', k);
+      return () => window.removeEventListener('keydown', k);
+    }, []);
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    return html`<div class="gate-card">
+      <div class="pin-who"><${Avatar} p=${profile} size="md" /><b>${profile.name}</b><span style=${{ color: 'var(--muted)' }}>${t('pin_enter')}</span></div>
+      <div class=${'pin-dots' + (bad ? ' bad shake' : '')} role="status" aria-label=${pin.length + ' / ' + len}>
+        ${Array.from({ length: len }, (_, i) => html`<i key=${i} class=${i < pin.length ? 'on' : ''}></i>`)}
+      </div>
+      <p class="pin-msg" role="alert">${msg}</p>
+      <div class="keypad">
+        ${keys.map(k => html`<button key=${k} onClick=${() => press(k)} disabled=${busy}>${k}</button>`)}
+        ${onBack ? html`<button class="ghost" onClick=${onBack} aria-label=${t('switch_user')}>${Icon.back}</button>` : html`<span></span>`}
+        <button onClick=${() => press('0')} disabled=${busy}>0</button>
+        <button class="ghost" onClick=${del} disabled=${busy || !pin.length}>${t('del_digit')}</button>
+      </div>
+    </div>`;
+  }
+
+  function SetupForm({ t, onDone }) {
+    const blank = () => ({ name: '', pin: '', pin2: '' });
+    const [rows, setRows] = useState([blank(), blank()]);
+    const [err, setErr] = useState('');
+    const [busy, setBusy] = useState(false);
+    const set = (i, k, v) => setRows(rs => rs.map((r, j) => j === i ? Object.assign({}, r, { [k]: k === 'name' ? v : v.replace(/\D/g, '').slice(0, 6) }) : r));
+    const ph = i => i === 0 ? t('setup_ph1') : i === 1 ? t('setup_ph2') : t('setup_ph');
+    const submit = async e => {
+      e.preventDefault();
+      const list = rows.map(r => ({ name: r.name.trim(), pin: r.pin, pin2: r.pin2 }));
+      if (list.some(r => !r.name)) return setErr(t('e_setup_name'));
+      if (new Set(list.map(r => r.name.toLowerCase())).size !== list.length) return setErr(t('e_setup_dupe'));
+      if (list.some(r => !/^\d{4,6}$/.test(r.pin))) return setErr(t('e_setup_pin'));
+      if (list.some(r => r.pin !== r.pin2)) return setErr(t('e_setup_match'));
+      setErr(''); setBusy(true);
+      const res = await onDone(list.map(r => ({ name: r.name, pin: r.pin })));
+      if (res) { setBusy(false); setErr(res.error === 'setup_local_only' ? t('e_setup_local') : t('pin_net')); }
+    };
+    return html`<form class="gate-card" onSubmit=${submit} noValidate>
+      <div class="gate-head"><h1>${t('setup_t')}</h1><p>${t('setup_p')}</p></div>
+      <div class="setup-list">
+        ${rows.map((r, i) => html`<div class="setup-row" key=${i}>
+          <div class="setup-row-head">
+            <b><${Avatar} p=${{ name: r.name || String(i + 1), color: ['#3A80C2', '#D64545', '#1F9A66', '#C98304', '#7A5AF8', '#D9468F'][i] }} size="sm" />${t('setup_person', { n: i + 1 })}</b>
+            ${rows.length > 1 ? html`<button type="button" class="link-btn" onClick=${() => setRows(rs => rs.filter((_, j) => j !== i))}>${t('setup_remove')}</button>` : null}
+          </div>
+          <div class="field"><label for=${'s-name-' + i}>${t('setup_name')}</label>
+            <input id=${'s-name-' + i} class="input" value=${r.name} maxLength="30" placeholder=${ph(i)} autoComplete="off" onInput=${e => set(i, 'name', e.target.value)} /></div>
+          <div class="two">
+            <div class="field"><label for=${'s-pin-' + i}>${t('setup_pin')}</label>
+              <input id=${'s-pin-' + i} class="input num" type="password" inputmode="numeric" autoComplete="new-password" maxLength="6" value=${r.pin} onInput=${e => set(i, 'pin', e.target.value)} /></div>
+            <div class="field"><label for=${'s-pin2-' + i}>${t('setup_pin2')}</label>
+              <input id=${'s-pin2-' + i} class="input num" type="password" inputmode="numeric" autoComplete="new-password" maxLength="6" value=${r.pin2} onInput=${e => set(i, 'pin2', e.target.value)} /></div>
+          </div>
+        </div>`)}
+      </div>
+      ${rows.length < 6 ? html`<button type="button" class="add-inline" onClick=${() => setRows(rs => rs.concat([blank()]))}>${t('setup_add')}</button>` : null}
+      ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+      <button type="submit" class="btn-primary" disabled=${busy} style=${{ padding: '13px 18px', fontSize: '16px' }}>${t('setup_go')}</button>
+    </form>`;
+  }
+
+  function Gate({ info, t, lang, setLang, theme, setTheme, onSetup, onLogin }) {
+    const profiles = info.profiles || [];
+    const [pick, setPick] = useState(() => profiles.length === 1 ? profiles[0] : null);
+    const hr = new Date().getHours();
+    const greet = t(hr >= 5 && hr < 12 ? 'greet_1' : hr >= 12 && hr < 15 ? 'greet_2' : hr >= 15 && hr < 19 ? 'greet_3' : 'greet_4');
+    let bodyEl;
+    if (info.setupNeeded) bodyEl = html`<${SetupForm} t=${t} onDone=${onSetup} />`;
+    else if (pick) bodyEl = html`<div class="gate-panel"><${PinPad} key=${pick.id} profile=${pick} t=${t} onSubmit=${pin => onLogin(pick.id, pin)} onBack=${profiles.length > 1 ? () => setPick(null) : null} /></div>`;
+    else bodyEl = html`<${React.Fragment}>
+      <section class="hero gate-hero">
+        <div class="eyebrow">${greet}</div>
+        <h1>${t('gate_who')}</h1>
+        <p>${t('gate_sub')}</p>
+      </section>
+      <div class="who-list">
+        ${profiles.map(p => html`<button key=${p.id} class="who-row" onClick=${() => setPick(p)}>
+          <${Avatar} p=${p} size="lg" />
+          <span class="who-name"><b>${p.name}</b><small>${t('gate_tap')}</small></span>
+          <span class="who-go" aria-hidden="true">${Icon.right}</span>
+        </button>`)}
+      </div>
+      <p class="gate-foot">${Icon.lock}<span>${t('gate_foot')}</span></p>
+    <//>`;
+    return html`<div class="gate">
+      <div class="gate-art" aria-hidden="true">
+        <svg viewBox="0 0 420 240" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+          <path class="art-hill-c" d="M0 118 C70 78 140 128 210 96 S350 54 420 88 V240 H0 Z" />
+          <path class="art-hill-a" d="M0 150 C80 112 150 168 232 130 S360 100 420 132 V240 H0 Z" />
+          <g>
+            <rect class="art-bar dim" x="244" y="148" width="22" height="60" rx="6" />
+            <rect class="art-bar dim" x="274" y="128" width="22" height="80" rx="6" />
+            <rect class="art-bar" x="304" y="104" width="22" height="104" rx="6" />
+            <rect class="art-bar" x="334" y="80" width="22" height="128" rx="6" />
+            <rect class="art-bar" x="364" y="54" width="22" height="154" rx="6" />
+          </g>
+          <path class="art-line" d="M52 168 C110 150 160 160 214 128 S300 92 392 36" />
+          <path class="art-hill-b" d="M0 192 C70 168 150 214 236 184 S356 160 420 184 V240 H0 Z" />
+          <g>
+            <circle class="art-coin" cx="62" cy="176" r="24" />
+            <circle class="art-coin-in" cx="62" cy="176" r="16" />
+            <circle class="art-coin" cx="112" cy="196" r="15" />
+            <circle class="art-coin-in" cx="112" cy="196" r="9" />
+            <circle class="art-coin" cx="30" cy="210" r="11" />
+          </g>
+        </svg>
+      </div>
+      <div class="gate-inner">
+        <div class="gate-top">
+          <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang Belanja</div></div>
+          <div class="mobile-tools"><${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+        </div>
+        ${bodyEl}
+      </div>
+    </div>`;
+  }
+
+  function ProfileSettings({ t, me, onRename, onChangePin, onAddProfile, onLock }) {
+    const [name, setName] = useState(me.name);
+    const [open, setOpen] = useState(null); // 'pin' | 'add'
+    const [f, setF] = useState({ a: '', b: '', c: '' });
+    const [err, setErr] = useState('');
+    const [busy, setBusy] = useState(false);
+    const digits = v => v.replace(/\D/g, '').slice(0, 6);
+    const toggle = k => { setOpen(o => o === k ? null : k); setF({ a: '', b: '', c: '' }); setErr(''); };
+    const run = async (fn) => { setBusy(true); const e = await fn(); setBusy(false); if (e) setErr(e); else { setOpen(null); setF({ a: '', b: '', c: '' }); setErr(''); } };
+    const submitPin = e => {
+      e.preventDefault();
+      if (!/^\d{4,6}$/.test(f.b)) return setErr(t('e_setup_pin'));
+      if (f.b !== f.c) return setErr(t('e_setup_match'));
+      run(() => onChangePin(f.a, f.b));
+    };
+    const submitAdd = e => {
+      e.preventDefault();
+      if (!f.a.trim()) return setErr(t('e_setup_name'));
+      if (!/^\d{4,6}$/.test(f.b)) return setErr(t('e_setup_pin'));
+      if (f.b !== f.c) return setErr(t('e_setup_match'));
+      run(() => onAddProfile(f.a.trim(), f.b));
+    };
+    const pinInput = (id, k, label) => html`<div class="field"><label for=${id}>${label}</label><input id=${id} class="input num" type="password" inputmode="numeric" autoComplete="new-password" maxLength="6" value=${f[k]} onInput=${e => setF(x => Object.assign({}, x, { [k]: digits(e.target.value) }))} /></div>`;
+    return html`<section class="card set-list">
+      <div class="set-row">
+        <div style=${{ display: 'flex', gap: '12px', alignItems: 'center' }}><${Avatar} p=${me} /><div><h3>${t('prof_t')}</h3><p>${t('prof_p', { n: me.name })}</p></div></div>
+        <button class="btn-ghost" onClick=${onLock} style=${{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>${Icon.lock}${t('lock_now')}</button>
+      </div>
+      <p>${t('lock_p')}</p>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('prof_name')}</h3></div>
+        <form class="inline-form" onSubmit=${e => { e.preventDefault(); if (name.trim() && name.trim() !== me.name) onRename(name.trim()); }}>
+          <input id="prof-name" class="input" value=${name} maxLength="30" onInput=${e => setName(e.target.value)} aria-label=${t('prof_name')} />
+          <button class="btn-primary" type="submit">${t('save')}</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('pin_change')}</h3></div>
+        <button class="btn-ghost" onClick=${() => toggle('pin')} aria-expanded=${open === 'pin'}>${open === 'pin' ? t('cancel') : t('pin_change')}</button>
+      </div>
+      ${open === 'pin' ? html`<form class="sub-form" onSubmit=${submitPin} noValidate>
+        ${pinInput('pin-cur', 'a', t('pin_cur'))}
+        <div class="two">${pinInput('pin-new', 'b', t('pin_new'))}${pinInput('pin-new2', 'c', t('pin_new2'))}</div>
+        ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+        <button class="btn-primary" type="submit" disabled=${busy}>${t('save')}</button>
+      </form>` : null}
+      <div class="divider"></div>
+      <div class="set-row">
+        <div><h3>${t('prof_add')}</h3><p>${t('prof_add_p')}</p></div>
+        <button class="btn-ghost" onClick=${() => toggle('add')} aria-expanded=${open === 'add'}>${open === 'add' ? t('cancel') : t('prof_add')}</button>
+      </div>
+      ${open === 'add' ? html`<form class="sub-form" onSubmit=${submitAdd} noValidate>
+        <div class="field"><label for="add-name">${t('setup_name')}</label><input id="add-name" class="input" maxLength="30" value=${f.a} placeholder=${t('setup_ph')} onInput=${e => setF(x => Object.assign({}, x, { a: e.target.value }))} /></div>
+        <div class="two">${pinInput('add-pin', 'b', t('setup_pin'))}${pinInput('add-pin2', 'c', t('setup_pin2'))}</div>
+        ${err ? html`<p class="form-err" role="alert">${err}</p>` : null}
+        <button class="btn-primary" type="submit" disabled=${busy}>${t('save')}</button>
+      </form>` : null}
+    </section>`;
+  }
+
+  // ---------- app ----------
+  const PAGES = ['home', 'expenses', 'reports', 'settings'];
+  function App() {
+    const today = useMemo(() => new Date(), []);
+    const [lang, setLangState] = useState(() => { try { const l = localStorage.getItem(LANG_KEY); if (l === 'en' || l === 'ms') return l; } catch (e) {} return 'ms'; });
+    const [page, setPage] = useState(() => { const h = (location.hash || '').slice(1); return PAGES.includes(h) ? h : 'home'; });
+    const [month, setMonth] = useState(() => monthKey(new Date()));
+    const [loading, setLoading] = useState(true);
+    const [backend, setBackend] = useState(null);
+    const [items, setItems] = useState([]);
+    const [profile, setProfile] = useState({});
+    const [tab, setTab] = useState('must');
+    const [sheet, setSheet] = useState(null);
+    const [toast, setToast] = useState(null);
+    const [theme, setThemeState] = useState(() => { try { const x = localStorage.getItem(THEME_KEY); if (x === 'light' || x === 'dark' || x === 'system') return x; } catch (e) {} return 'system'; });
+    const [demo, setDemo] = useState(null);
+    const [demoIncome, setDemoIncome] = useState(EXAMPLE_INCOME);
+    const [serverInfo, setServerInfo] = useState(null);
+    const [me, setMe] = useState(null);
+    const r = useRef({ q: {} }).current;
+    const t = useMemo(() => makeT(lang), [lang]);
+    r.t = t;
+
+    const say = msg => { setToast(msg); clearTimeout(r.tt); r.tt = setTimeout(() => setToast(null), 3200); };
+
+    useEffect(() => { document.documentElement.lang = lang === 'ms' ? 'ms' : 'en'; }, [lang]);
+    useEffect(() => {
+      const el = document.documentElement;
+      if (theme === 'system') { if (HOST_THEME) el.setAttribute('data-theme', HOST_THEME); else el.removeAttribute('data-theme'); }
+      else el.setAttribute('data-theme', theme);
+      let dark = theme === 'dark';
+      if (theme === 'system') { try { dark = HOST_THEME ? HOST_THEME === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) {} }
+      const m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', dark ? '#0E4A30' : '#146B44');
+    }, [theme]);
+
+    useEffect(() => {
+      let dead = false; const unsubs = [];
+      const useLocal = () => {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null'); } catch (e) {}
+        if (saved) { setItems(Array.isArray(saved.items) ? saved.items : []); setProfile(saved.profile || {}); }
+        setBackend('local'); setLoading(false);
+      };
+      (async () => {
+        if (VIEW_ONLY) { setBackend('local'); setLoading(false); return; }
+        const c = window.claude;
+        if (!c || !c.use) {
+          let info = null;
+          try { info = await srv.call('GET', '/profiles'); } catch (e) {}
+          if (dead) return;
+          if (!info || !Array.isArray(info.profiles)) return useLocal();
+          setBackend('server'); setServerInfo(info);
+          const tok = srv.getToken();
+          if (tok) {
+            srv.token = tok;
+            try { const who = await srv.call('GET', '/me'); if (!dead) await r.openSession(who.profile); return; }
+            catch (e) { srv.setToken(null); }
+          }
+          setLoading(false);
+          return;
+        }
+        let db = null, uid = null;
+        try { const [d, u] = await Promise.all([c.use('db'), c.use('user')]); db = d; uid = u ? await u.id() : null; } catch (e) {}
+        if (dead) return;
+        if (!db || !uid) return useLocal();
+        const prof = db.doc('data/users/' + uid + '/profile');
+        r.prof = prof; r.col = prof.collection('expenses');
+        setBackend('db');
+        let got = false;
+        unsubs.push(prof.onSnapshot(s => {
+          if (r.profPending) return;
+          const p = s.exists ? (s.data() || {}) : {};
+          setProfile(p);
+          if (p.lang === 'ms' || p.lang === 'en') setLangState(p.lang);
+          if (p.theme === 'light' || p.theme === 'dark' || p.theme === 'system') setThemeState(p.theme);
+        }, () => {}));
+        unsubs.push(r.col.onSnapshot(s => {
+          setItems(s.docs.map(d => Object.assign({}, d.data(), { id: d.id })));
+          if (!got) { got = true; setLoading(false); }
+        }, e => { setLoading(false); say(r.t(errKey(e))); }));
+      })();
+      return () => { dead = true; unsubs.forEach(u => u()); };
+    }, []);
+
+    useEffect(() => {
+      if (backend !== 'local' || loading || VIEW_ONLY) return;
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ items, profile })); } catch (e) {}
+    }, [items, profile, backend, loading]);
+
+    // ---- server mode: sessions and saving ----
+    r.openSession = async who => {
+      const d = await srv.call('GET', '/data');
+      const p = d.profile || {};
+      r.loaded = false;
+      setItems(Array.isArray(d.items) ? d.items : []); setProfile(p);
+      setDemo(null); setDemoIncome(EXAMPLE_INCOME); setPage('home'); setMonth(monthKey(new Date()));
+      if (p.lang === 'ms' || p.lang === 'en') setLangState(p.lang);
+      if (p.theme === 'light' || p.theme === 'dark' || p.theme === 'system') setThemeState(p.theme);
+      setMe(who); setLoading(false);
+      setTimeout(() => { r.loaded = true; }, 0);
+    };
+    r.flush = async keepalive => {
+      clearTimeout(r.saveT);
+      const d = r.dirty;
+      if (!d || !srv.token) return;
+      r.dirty = null;
+      try { await srv.call('PUT', '/data', d, keepalive); }
+      catch (e) {
+        if (e.status === 401) r.lock(true);
+        else { r.dirty = r.dirty || d; say(r.t('err_net')); }
+      }
+    };
+    r.lock = async expired => {
+      if (!expired) { await r.flush(); try { await srv.call('POST', '/logout'); } catch (e) {} }
+      r.loaded = false; r.dirty = null; clearTimeout(r.saveT);
+      srv.setToken(null);
+      setMe(null); setItems([]); setProfile({}); setDemo(null); setDemoIncome(EXAMPLE_INCOME); setSheet(null); setPage('home');
+      try { const info = await srv.call('GET', '/profiles'); setServerInfo(info); } catch (e) {}
+      say(r.t(expired ? 't_expired' : 't_locked'));
+    };
+    useEffect(() => {
+      if (backend !== 'server' || !me || !r.loaded) return;
+      r.dirty = { items, profile };
+      clearTimeout(r.saveT);
+      r.saveT = setTimeout(() => r.flush(), 600);
+    }, [items, profile]);
+    useEffect(() => {
+      if (backend !== 'server' || !me) return;
+      let timer;
+      const reset = () => { clearTimeout(timer); timer = setTimeout(() => r.lock(false), AUTO_LOCK_MS); };
+      const hide = () => { if (document.visibilityState === 'hidden') r.flush(true); };
+      const evs = ['pointerdown', 'keydown', 'scroll'];
+      evs.forEach(e => window.addEventListener(e, reset, { passive: true }));
+      document.addEventListener('visibilitychange', hide);
+      reset();
+      return () => { clearTimeout(timer); evs.forEach(e => window.removeEventListener(e, reset)); document.removeEventListener('visibilitychange', hide); };
+    }, [backend, me]);
+
+    const onSetup = async list => {
+      try { const res = await srv.call('POST', '/setup', { profiles: list }); setServerInfo({ setupNeeded: false, profiles: res.profiles }); return null; }
+      catch (e) { if (e.status === 409) { try { setServerInfo(await srv.call('GET', '/profiles')); } catch (x) {} return null; } return e.data || { error: 'net' }; }
+    };
+    const onLogin = async (pid, pin) => {
+      try {
+        const d = await srv.call('POST', '/login', { profileId: pid, pin });
+        srv.setToken(d.token);
+        await r.openSession(d.profile);
+        return null;
+      } catch (e) { return e.data && e.data.error ? e.data : { error: 'net' }; }
+    };
+    const onRename = async n => {
+      try { const d = await srv.call('PATCH', '/me', { name: n }); setMe(d.profile); say(r.t('t_renamed')); }
+      catch (e) { if (e.status === 401) r.lock(true); else say(r.t('err_net')); }
+    };
+    const onChangePin = async (cur, next) => {
+      try { const d = await srv.call('POST', '/me/pin', { current: cur, next }); setMe(d.profile); say(r.t('t_pin_changed')); return null; }
+      catch (e) { if (e.status === 401) { r.lock(true); return null; } return e.status === 403 ? r.t('e_pin_cur') : r.t('pin_net'); }
+    };
+    const onAddProfile = async (n, pin) => {
+      try { await srv.call('POST', '/profiles', { name: n, pin }); say(r.t('t_prof_added', { n })); return null; }
+      catch (e) { if (e.status === 401) { r.lock(true); return null; } return e.status === 409 ? r.t('e_too_many') : r.t('pin_net'); }
+    };
+
+    const api = useMemo(() => {
+      const queue = (key, fn) => { const p = (r.q[key] || Promise.resolve()).then(fn, fn); r.q[key] = p.catch(() => {}); return p; };
+      const guard = p => Promise.resolve(p).catch(e => { say(r.t(errKey(e))); throw e; });
+      if (backend === 'db') return {
+        add: data => { const ref = r.col.doc(); return guard(queue(ref.id, () => ref.set(data))); },
+        update: (id, patch) => guard(queue(id, () => r.col.doc(id).update(patch))),
+        remove: id => guard(queue(id, () => r.col.doc(id).delete())),
+        saveProfile: p => { setProfile(p); r.profPending = true; return guard(queue('__profile', () => r.prof.set(p))).finally(() => { r.profPending = false; }); }
+      };
+      const newId = () => 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      return {
+        add: async data => setItems(xs => xs.concat([Object.assign({}, data, { id: newId() })])),
+        update: async (id, patch) => setItems(xs => xs.map(x => x.id === id ? Object.assign({}, x, patch) : x)),
+        remove: async id => setItems(xs => xs.filter(x => x.id !== id)),
+        saveProfile: async p => setProfile(p)
+      };
+    }, [backend]);
+
+    const sym = profile.currency || 'RM';
+    const exampleMode = !loading && items.length === 0 && !profile.started && !(backend === 'server' && !me);
+    useEffect(() => { if (exampleMode && !demo) setDemo(VIEW_ONLY ? showcaseItems(monthKey(today)) : exampleItems(monthKey(today))); if (!exampleMode && demo) setDemo(null); }, [exampleMode, demo]);
+    const source = exampleMode ? (demo || []) : items;
+    const view = source.filter(i => i.month === month);
+    const income = exampleMode ? demoIncome : incomeFor(profile, month);
+    const must = view.filter(i => i.priority === 'must');
+    const defer = view.filter(i => i.priority !== 'must');
+    const v = { view, income, must, defer, mustT: sum(must), deferT: sum(defer), mustPaid: sum(must.filter(i => i.paid)) };
+    const readOnly = loading || VIEW_ONLY;
+    const newDemoId = () => 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const A = exampleMode ? {
+      add: async d => setDemo(xs => (xs || []).concat([Object.assign({}, d, { id: newDemoId() })])),
+      update: async (id, p) => setDemo(xs => (xs || []).map(x => x.id === id ? Object.assign({}, x, p) : x)),
+      remove: async id => setDemo(xs => (xs || []).filter(x => x.id !== id)),
+      saveProfile: p => api.saveProfile(p)
+    } : api;
+    const nextM = shiftMonth(month, 1);
+    const L = m => mLong(m, lang);
+
+    const carry = useMemo(() => {
+      const prev = source.filter(i => i.month === shiftMonth(month, -1) && i.recurring);
+      const have = new Set(source.filter(i => i.month === month).map(i => i.seriesId || i.id));
+      return prev.filter(i => !have.has(i.seriesId || i.id));
+    }, [source, month]);
+
+    const cleanCopy = (src, m) => ({ name: nm(src, lang), amount: src.amount, priority: src.priority, category: src.category, dueDay: src.dueDay || null, recurring: !!src.recurring, note: src.note || '', month: m, paid: false, seriesId: src.seriesId || src.id, createdAt: Date.now() });
+    const quiet = p => p.catch(() => {});
+
+    const setLang = l => {
+      setLangState(l);
+      try { localStorage.setItem(LANG_KEY, l); } catch (e) {}
+      if (!loading && backend) quiet(api.saveProfile(Object.assign({}, profile, { lang: l })));
+    };
+    const setTheme = x => {
+      setThemeState(x);
+      try { localStorage.setItem(THEME_KEY, x); } catch (e) {}
+      if (!loading && backend) quiet(api.saveProfile(Object.assign({}, profile, { theme: x })));
+    };
+    const onToggle = it => quiet(A.update(it.id, { paid: !it.paid, paidAt: !it.paid ? Date.now() : null }));
+    const onDefer = it => quiet(A.update(it.id, { month: nextM, paid: false, paidAt: null }).then(() => say(t('t_moved', { n: nm(it, lang), m: L(nextM) }))));
+    const onApplyPlan = list => quiet(Promise.all(list.map(it => A.update(it.id, { month: nextM, paid: false, paidAt: null }))).then(() => say(t('t_moved_n', { n: list.length, m: L(nextM) }))));
+    const onCarry = () => quiet(Promise.all(carry.map(src => A.add(cleanCopy(src, month)))).then(() => say(t('t_carry', { n: carry.length }))));
+    const onIncome = n => exampleMode ? (setDemoIncome(n), say(t('t_income', { m: L(month) }))) : quiet(api.saveProfile(Object.assign({}, profile, { incomes: Object.assign({}, profile.incomes || {}, { [month]: n }) })).then(() => say(t('t_income', { m: L(month) }))));
+    const onCurrency = s => quiet(api.saveProfile(Object.assign({}, profile, { currency: s })));
+    const onClear = () => quiet(Promise.all(view.map(i => A.remove(i.id))).then(() => say(t('t_cleared', { m: L(month) }))));
+    const keepDemo = async () => {
+      const list = demo || [];
+      try {
+        await Promise.all(list.map(d => {
+          const c = { name: nm(d, lang), amount: d.amount, priority: d.priority, category: d.category, dueDay: d.dueDay || null, recurring: !!d.recurring, note: d.note || '', month: d.month, paid: !!d.paid, paidAt: d.paidAt || null, createdAt: Date.now() };
+          if (d.seriesId) c.seriesId = d.seriesId;
+          return api.add(c);
+        }));
+        await api.saveProfile(Object.assign({}, profile, { lang, theme, started: true, incomes: Object.assign({}, profile.incomes || {}, { [monthKey(today)]: demoIncome }) }));
+        say(t('t_demo_saved'));
+      } catch (e) {}
+    };
+    const startEmpty = () => quiet(api.saveProfile(Object.assign({}, profile, { lang, theme, started: true })).then(() => say(t('t_demo_cleared'))));
+    const openAdd = kind => { const k = kind || (page === 'expenses' ? tab : 'must'); setSheet({ priority: k }); };
+    const onSave = data => {
+      const p = sheet.item
+        ? A.update(sheet.item.id, sheet.item.i18n ? Object.assign({}, data, { i18n: null }) : data).then(() => say(t('t_saved')))
+        : A.add(Object.assign({}, data, { month, paid: false, createdAt: Date.now() })).then(() => say(t('t_added', { n: data.name })));
+      setSheet(null); quiet(p);
+    };
+    const onDelete = it => { setSheet(null); quiet(A.remove(it.id).then(() => say(t('t_deleted', { n: nm(it, lang) })))); };
+    const go = (p, tb) => { setPage(p); if (tb) setTab(tb); try { history.replaceState(null, '', '#' + p); } catch (e) {} window.scrollTo(0, 0); };
+
+    const ctx = { sym, t, lang, month, today, readOnly, onToggle, onDefer, onEdit: it => setSheet({ item: it }) };
+    const NAV = [['home', t('nav_home'), Icon.home], ['expenses', t('nav_exp'), Icon.list], ['reports', t('nav_rep'), Icon.chart], ['settings', t('nav_set'), Icon.gear]];
+    const titles = { home: [t('nav_home'), t('home_sub', { m: mLong(month, lang, true) })], expenses: [t('nav_exp'), t('exp_sub', { m: mLong(month, lang, true) })], reports: [t('nav_rep'), t('rep_sub', { m: mLong(month, lang, true) })], settings: [t('nav_set'), t('set_sub')] };
+    const isNow = month === monthKey(today);
+    const hr = new Date().getHours();
+    const greet = t(hr >= 5 && hr < 12 ? 'greet_1' : hr >= 12 && hr < 15 ? 'greet_2' : hr >= 15 && hr < 19 ? 'greet_3' : 'greet_4');
+
+    let body;
+    if (loading) body = html`<section class="card"><div class="empty">${t('loading')}</div></section>`;
+    else if (page === 'home') body = html`<${HomePage} ctx=${ctx} v=${v} go=${go} openAdd=${openAdd} onApplyPlan=${onApplyPlan} />`;
+    else if (page === 'expenses') body = html`<${ExpensesPage} ctx=${ctx} v=${v} tab=${tab} setTab=${setTab} openAdd=${openAdd} />`;
+    else if (page === 'reports') body = html`<${ReportsPage} ctx=${ctx} v=${v} allItems=${source} profile=${profile} exampleMode=${exampleMode} />`;
+    if (page === 'settings') body = html`<${React.Fragment}>${me ? html`<${ProfileSettings} key=${me.id + me.name} t=${t} me=${me} onRename=${onRename} onChangePin=${onChangePin} onAddProfile=${onAddProfile} onLock=${() => r.lock(false)} />` : null}<${SettingsPage} ctx=${ctx} v=${v} profile=${profile} meName=${me ? me.name : ''} setLang=${setLang} theme=${theme} setTheme=${setTheme} onCurrency=${onCurrency} onIncome=${onIncome} carry=${carry} onCarry=${onCarry} onClear=${onClear} backend=${backend} loading=${loading} exampleMode=${exampleMode} /><//>`;
+
+    if (backend === 'server' && !me && serverInfo && !loading) {
+      return html`<${React.Fragment}>
+        <${Gate} key=${(serverInfo.profiles || []).map(p => p.id).join(',') + String(serverInfo.setupNeeded)} info=${serverInfo} t=${t} lang=${lang} setLang=${setLang} theme=${theme} setTheme=${setTheme} onSetup=${onSetup} onLogin=${onLogin} />
+        ${toast ? html`<div class="toast" role="status" style=${{ bottom: '24px' }}>${toast}</div>` : null}
+      <//>`;
+    }
+
+    return html`<div class="shell">
+      <nav class="side" aria-label="Menu">
+        <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang<br/>Belanja</div></div>
+        ${NAV.map(([id, label, ic]) => html`<button key=${id} class="side-link" aria-current=${page === id ? 'page' : undefined} onClick=${() => go(id)}>${ic}${label}</button>`)}
+        <button class="btn-primary side-add" onClick=${() => openAdd()} disabled=${readOnly}>${Icon.plus}${t('add_expense')}</button>
+        <div class="side-foot">${me ? html`<div class="user-chip"><${Avatar} p=${me} size="sm" /><b>${me.name}</b><button class="lock-btn" onClick=${() => r.lock(false)} title=${t('lock_now')}>${Icon.lock}${t('lock')}</button></div>` : null}<${ThemeSwitch} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+      </nav>
+
+      <main class="content">
+        <header class="top"><div class="top-in">
+          <div class="top-bar">
+            <div class="brand"><div class="brand-mark">${Icon.mark}</div><div class="brand-name">Rancang Belanja</div></div>
+            <div class="top-tools">${me ? html`<button class="me-btn" onClick=${() => r.lock(false)} aria-label=${t('lock_now') + ' (' + me.name + ')'} title=${t('lock_now')}><${Avatar} p=${me} size="sm" /></button>` : null}<${ThemeCycle} theme=${theme} setTheme=${setTheme} t=${t} /><${LangSwitch} lang=${lang} setLang=${setLang} /></div>
+          </div>
+          <div class="page-head">
+            <div class="head-text">
+              ${page === 'home' ? html`<span class="hello">${greet},</span>` : null}
+              <h1 class="page-title">${page === 'home' ? (me ? me.name : t('welcome')) : titles[page][0]}</h1>
+              ${page !== 'home' ? html`<p class="page-sub">${titles[page][1]}</p>` : null}
+            </div>
+            <div class="head-tools">
+              <${MonthNav} month=${month} setMonth=${setMonth} lang=${lang} t=${t} />
+              ${!isNow ? html`<button class="today-link" onClick=${() => setMonth(monthKey(today))}>↺ ${t('this_month')}</button>` : null}
+            </div>
+          </div>
+          ${page === 'home' && !loading ? html`<${HomeTop} ctx=${ctx} v=${v} go=${go} openAdd=${openAdd} carry=${carry} onCarry=${onCarry} />` : null}
+        </div></header>
+
+        <div class="page"><div class="page-in">
+
+        ${VIEW_ONLY ? html`<div class="view-pill">${Icon.eye}<span><b>${t('view_t')}</b> ${t('view_p')}</span></div>` : null}
+        ${exampleMode && !VIEW_ONLY && page !== 'settings' ? html`<div class="banner">
+          <div class="banner-body"><span class="banner-ic">${Icon.sparkle}</span><${Rich} tag="p" text=${t('ex_banner')} /></div>
+          <div class="banner-actions">
+            <button class="btn-ghost" onClick=${startEmpty}>${t('ex_clear')}</button>
+            <button class="btn-primary" onClick=${keepDemo}>${t('ex_save')}</button>
+          </div>
+        </div>` : null}
+        ${carry.length && !VIEW_ONLY && (page === 'home' || page === 'expenses') ? html`<div class="banner">
+          <${Rich} tag="p" text=${t('carry_banner', { n: carry.length, m: esc(L(shiftMonth(month, -1))), a: esc(money(sym, sum(carry))) })} />
+          <div class="banner-actions"><button class="btn-primary" onClick=${onCarry}>${t('carry_add')}</button></div>
+        </div>` : null}
+
+        ${body}
+        </div></div>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Menu">
+        ${[NAV[0], NAV[1], null, NAV[2], NAV[3]].map(n => n
+          ? html`<button key=${n[0]} aria-current=${page === n[0] ? 'page' : undefined} onClick=${() => go(n[0])}><span class="ic">${n[2]}</span>${n[1]}</button>`
+          : html`<button key="add" class="nav-add" onClick=${() => openAdd()} disabled=${readOnly} aria-label=${t('add_expense')}><span class="ic">${Icon.plus}</span>${t('add')}</button>`)}
+      </nav>
+      ${sheet ? html`<${Sheet} init=${sheet} ctx=${ctx} onClose=${() => setSheet(null)} onSave=${onSave} onDelete=${onDelete} />` : null}
+      ${toast ? html`<div class="toast" role="status">${toast}</div>` : null}
+    </div>`;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);
+})();
+</script>
+
+</body>
+</html>
