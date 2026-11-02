@@ -67,11 +67,11 @@
 }
 
 * { box-sizing: border-box; }
-/* Fills the phone status bar area, which the installed app draws under (green in light mode, page colour in dark). */
-:root { --strip: #146B44; }
-:root[data-theme="dark"] { --strip: #0B110E; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --strip: #0B110E; } }
-body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; z-index: 100; pointer-events: none; height: env(safe-area-inset-top, 0px); background: var(--strip); }
+/* The installed app draws under the phone status bar; the page shows through, with a soft shade in light mode so the white clock stays readable. */
+:root { --strip: rgba(0,0,0,.28); }
+:root[data-theme="dark"] { --strip: transparent; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --strip: transparent; } }
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; z-index: 100; pointer-events: none; height: calc(env(safe-area-inset-top, 0px) * 1.6); background: linear-gradient(var(--strip), transparent); }
 body { background: radial-gradient(560px 340px at -12% -6%, color-mix(in srgb, var(--accent) 32%, transparent), transparent 70%), radial-gradient(480px 320px at 112% -4%, rgba(242,181,68,.38), transparent 70%), radial-gradient(520px 420px at 50% 120%, color-mix(in srgb, var(--defer) 20%, transparent), transparent 70%), var(--bg); background-attachment: fixed; min-height: 100vh; color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
